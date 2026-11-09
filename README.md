@@ -16,7 +16,7 @@ Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter u
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. Aucun outil métier, orchestrateur, dataset, test applicatif, interface, pipeline CI/CD ou déploiement n'est réalisé. Groq, Streamlit et MLflow restent à intégrer ; GitHub Actions reste à configurer. Aucune commande de lancement d'application n'est disponible.
+Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Aucun outil métier, orchestrateur, test d'agent, interface, pipeline CI/CD ou déploiement n'est réalisé. Groq, Streamlit et MLflow restent à intégrer ; GitHub Actions reste à configurer. Aucune commande de lancement d'application n'est disponible.
 
 ## Documentation
 
@@ -89,4 +89,17 @@ cp -n .env.example .env
 
 Cette copie est facultative à la tâche 2 : aucun composant ne lit encore ces variables. `GROQ_API_KEY`, `GROQ_MODEL` et `MLFLOW_TRACKING_URI` sont des emplacements futurs, laissés vides. Ne jamais placer une clé dans `.env.example`, le code, un rapport ou une capture. `.env` et ses variantes, les clés privées, les secrets Streamlit et les logs sont ignorés par Git ; `.env.example` reste versionnable. Utiliser ultérieurement les réglages sécurisés de l'environnement ou les secrets GitHub Actions pour l'injection des identifiants. Les règles d'exclusion ne remplacent pas une revue avant chaque commit.
 
-La tâche 3 n'est pas engagée.
+## Données synthétiques — tâche 3.A
+
+AtlasShop contient 50 produits, 30 clients fictifs, 300 commandes, 600 lignes et 35 FAQ. Aucune donnée personnelle réelle ni service externe n'est utilisé. Depuis la racine, avec Python 3.11.14 :
+
+```bash
+# Pour générer dans un dossier neuf, sans écraser la référence déjà fournie :
+.venv/bin/python data/generate_data.py --output-dir /tmp/atlasshop-nouveau --seed 202627
+.venv/bin/python data/validate_data.py --data-dir /tmp/atlasshop-nouveau
+# Vérifier la référence et reproduire les contrôles effectivement exécutés :
+.venv/bin/python data/validate_data.py
+.venv/bin/python -m unittest discover -s tests -p test_data_validation.py -v
+```
+
+Le générateur refuse d'écraser les fichiers existants. La graine par défaut est `202627`, la période avril–septembre 2026 et la référence fixe le 1er octobre 2026. Voir le [dictionnaire et les KPI](docs/data_dictionary.md) et la [méthode et les validations](docs/data_generation.md). Ces contrôles portent sur les données, sans tester un agent. La tâche 3.B n'est pas engagée.

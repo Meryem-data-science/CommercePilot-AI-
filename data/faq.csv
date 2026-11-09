@@ -1,0 +1,36 @@
+source_id,category,question,answer,version
+FAQ-001,Livraison,Où livrez-vous ?,AtlasShop livre uniquement au Maroc dans les villes desservies de cette démonstration.,1.0
+FAQ-002,Livraison,Quels sont les délais de livraison ?,La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.,1.0
+FAQ-003,Livraison,Quels sont les frais de livraison ?,"Dans cette simulation, la livraison est incluse : aucun frais supplémentaire ne figure dans le total.",1.0
+FAQ-004,Livraison,Livrez-vous le week-end ?,"Les dates simulées utilisent des jours calendaires, y compris les week-ends.",1.0
+FAQ-005,Livraison,Comment reconnaître un retard ?,Une livraison effectuée après la date prévue est tardive ; une commande en cours est en retard si la date de référence dépasse la date prévue.,1.0
+FAQ-006,Paiement,Quels moyens de paiement sont prévus ?,La boutique fictive prévoit le paiement anticipé et le paiement à la livraison ; aucune transaction réelle n’est possible.,1.0
+FAQ-007,Paiement,Que signifie un paiement en attente ?,Aucun encaissement n’est enregistré. Une commande en préparation peut rester en attente de paiement.,1.0
+FAQ-008,Paiement,Une commande livrée peut-elle être impayée ?,"Dans cette base de démonstration, toute commande livrée est payée.",1.0
+FAQ-009,Paiement,Dans quelle devise sont les prix ?,"Tous les prix et totaux sont exprimés en dirhams marocains, MAD, avec deux décimales.",1.0
+FAQ-010,Suivi,Comment suivre ma commande ?,Fournissez son identifiant ; le profil client ne peut consulter que ses propres commandes.,1.0
+FAQ-011,Suivi,Où trouver mon identifiant de commande ?,"La démonstration utilise des identifiants CMD-DEMO suivis de trois chiffres, séparés par des tirets.",1.0
+FAQ-012,Suivi,Puis-je suivre la commande d’un autre client ?,Non. La consultation par un client est limitée aux commandes qui lui appartiennent.,1.0
+FAQ-013,Suivi,Que signifie en préparation ?,La commande est enregistrée mais n’a pas encore été remise au transporteur fictif.,1.0
+FAQ-014,Suivi,Que signifie expédiée ?,La commande a été remise au transporteur fictif ; aucune date réelle de livraison n’est encore enregistrée.,1.0
+FAQ-015,Retours,Quel est le délai de retour ?,La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.,1.0
+FAQ-016,Retours,Quels produits peuvent être retournés ?,"Les articles doivent être inutilisés, complets et dans leur emballage ; les produits d’hygiène descellés sont exclus dans cette politique fictive.",1.0
+FAQ-017,Retours,Comment demander un retour ?,"La FAQ explique la procédure ; une demande doit être traitée par un support humain fictif, hors de l’agent.",1.0
+FAQ-018,Retours,Que signifie une commande retournée ?,"Dans la simulation, tous les articles de la commande ont été retournés et le remboursement intégral est enregistré.",1.0
+FAQ-019,Remboursements,L’agent peut-il me rembourser ?,Non. L’agent fournit des informations et n’exécute aucun remboursement.,1.0
+FAQ-020,Remboursements,Quel est le délai de remboursement ?,La politique fictive prévoit cinq jours calendaires après acceptation du retour par le support ; ces dates de traitement ne sont pas modélisées.,1.0
+FAQ-021,Remboursements,Le remboursement est-il partiel ?,La base actuelle représente uniquement des retours et remboursements complets ; les cas partiels sont exclus.,1.0
+FAQ-022,Remboursements,Que signifie remboursé ?,Le paiement initial a été restitué intégralement ; il ne contribue plus au montant actuellement payé.,1.0
+FAQ-023,Annulations,Quand une annulation est-elle possible ?,"La politique fictive autorise une demande avant expédition, à traiter hors de l’agent.",1.0
+FAQ-024,Annulations,L’agent peut-il annuler une commande ?,Non. Aucun outil prévu ne modifie les commandes.,1.0
+FAQ-025,Annulations,Une commande annulée est-elle facturée ?,Les annulations simulées surviennent avant encaissement et avant livraison ; elles ne contribuent pas au chiffre d’affaires.,1.0
+FAQ-026,Disponibilité,Comment connaître la disponibilité ?,"Le catalogue fictif indique disponible si le stock est positif, sinon rupture.",1.0
+FAQ-027,Disponibilité,Un article en rupture sera-t-il réapprovisionné ?,Aucune date de réapprovisionnement n’est prévue dans la base ; il ne faut pas en inventer.,1.0
+FAQ-028,Disponibilité,Le stock reflète-t-il les ventes historiques ?,"Le stock est une photographie synthétique à la date de référence, sans registre de mouvements historiques.",1.0
+FAQ-029,Service client,Comment contacter le support ?,La démonstration ne fournit aucun contact réel ; utiliser le canal humain fictif prévu dans le scénario académique.,1.0
+FAQ-030,Service client,Quels sont les horaires du support ?,"Les horaires fictifs sont du lundi au vendredi, de 9 h à 17 h, heure du Maroc.",1.0
+FAQ-031,Service client,Que faire si le suivi est indisponible ?,Réessayer ultérieurement ; un incident technique ne permet pas de déduire le statut de la commande.,1.0
+FAQ-032,Conditions générales,AtlasShop est-elle une véritable boutique ?,Non. AtlasShop est une boutique entièrement fictive créée pour un projet académique.,1.0
+FAQ-033,Conditions générales,Les prix incluent-ils des taxes supplémentaires ?,Les montants simulés sont des montants finaux ; aucune taxe supplémentaire ni ventilation fiscale n’est modélisée.,1.0
+FAQ-034,Conditions générales,Mes données personnelles sont-elles utilisées ?,Non. Seuls des identifiants synthétiques et des villes sont conservés pour les clients.,1.0
+FAQ-035,Conditions générales,Les conditions de vente ont-elles une portée juridique ?,Non. Toutes ces règles sont fictives et servent uniquement à la démonstration pédagogique.,1.0
