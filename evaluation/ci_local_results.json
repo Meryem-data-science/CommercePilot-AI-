@@ -1,0 +1,41 @@
+{
+  "environment": "Codex local only; GitHub Actions run not yet performed",
+  "summary": {
+    "outcome": "PASS",
+    "gates": {
+      "tests_offline": true,
+      "atlasshop": true,
+      "ruff": true,
+      "coverage_measured": true,
+      "evaluation_thresholds": true,
+      "evaluation_reproducible": true,
+      "reference_results_consistent": true,
+      "secret_scan": true,
+      "git_diff_check": true
+    },
+    "tests": {
+      "run": 143,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "coverage": {
+      "covered_lines": 588,
+      "num_statements": 628,
+      "covered_branches": 215,
+      "num_branches": 238,
+      "percent_covered": 92.72517321016166
+    },
+    "evaluation": {
+      "scenario_successes": {
+        "numerator": 42,
+        "denominator": 45
+      },
+      "direct_checks": {
+        "numerator": 28,
+        "denominator": 28
+      },
+      "permission_violation_count": 0
+    }
+  }
+}
