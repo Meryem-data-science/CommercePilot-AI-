@@ -1,0 +1,152 @@
+{
+  "scope": "task-11 local offline audit; no real Groq call",
+  "test_results": {
+    "run": 154,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "expected_failures": 0,
+    "unexpected_successes": 0,
+    "successful": true
+  },
+  "gates": [
+    {
+      "name": "tests_offline",
+      "passed": true
+    },
+    {
+      "name": "atlasshop",
+      "passed": true
+    },
+    {
+      "name": "ruff",
+      "passed": true
+    },
+    {
+      "name": "coverage_measured",
+      "passed": true
+    },
+    {
+      "name": "evaluation_thresholds",
+      "passed": true
+    },
+    {
+      "name": "evaluation_reproducible",
+      "passed": true
+    },
+    {
+      "name": "reference_results_consistent",
+      "passed": true
+    },
+    {
+      "name": "secret_scan",
+      "passed": true
+    },
+    {
+      "name": "git_diff_check",
+      "passed": true
+    }
+  ],
+  "coverage": {
+    "covered_lines": 588,
+    "num_statements": 628,
+    "percent_covered": 92.72517321016166,
+    "percent_covered_display": "93",
+    "missing_lines": 40,
+    "excluded_lines": 0,
+    "num_branches": 238,
+    "num_partial_branches": 21,
+    "covered_branches": 215,
+    "missing_branches": 23
+  },
+  "evaluation": {
+    "scenario_pass_rate": {
+      "numerator": 42,
+      "denominator": 45,
+      "value": 0.9333333333333333
+    },
+    "status_accuracy": {
+      "numerator": 42,
+      "denominator": 45,
+      "value": 0.9333333333333333
+    },
+    "tools_accuracy": {
+      "numerator": 45,
+      "denominator": 45,
+      "value": 1.0
+    },
+    "fidelity_controlled": {
+      "numerator": 23,
+      "denominator": 24,
+      "value": 0.9583333333333334
+    },
+    "faq_source_coverage": {
+      "numerator": 12,
+      "denominator": 13,
+      "value": 0.9230769230769231
+    },
+    "permission_compliance": {
+      "numerator": 10,
+      "denominator": 10,
+      "value": 1.0
+    },
+    "clarification_rate": {
+      "numerator": 9,
+      "denominator": 45,
+      "value": 0.2
+    },
+    "error_rate": {
+      "numerator": 6,
+      "denominator": 45,
+      "value": 0.13333333333333333
+    },
+    "permission_violations": [],
+    "by_category": {
+      "adversarial": {
+        "numerator": 4,
+        "denominator": 4,
+        "value": 1.0
+      },
+      "analytics": {
+        "numerator": 5,
+        "denominator": 6,
+        "value": 0.8333333333333334
+      },
+      "clarification": {
+        "numerator": 5,
+        "denominator": 5,
+        "value": 1.0
+      },
+      "combined": {
+        "numerator": 3,
+        "denominator": 3,
+        "value": 1.0
+      },
+      "errors": {
+        "numerator": 5,
+        "denominator": 5,
+        "value": 1.0
+      },
+      "faq": {
+        "numerator": 9,
+        "denominator": 10,
+        "value": 0.9
+      },
+      "orders": {
+        "numerator": 5,
+        "denominator": 6,
+        "value": 0.8333333333333334
+      },
+      "permissions": {
+        "numerator": 6,
+        "denominator": 6,
+        "value": 1.0
+      }
+    }
+  },
+  "direct_checks": {
+    "numerator": 28,
+    "denominator": 28,
+    "value": 1.0
+  }
+}

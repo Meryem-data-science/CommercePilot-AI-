@@ -1,0 +1,32 @@
+{
+  "scope": "Local source audit and reachable Git history; pattern-based, not a security guarantee",
+  "base_commit": "d98d9499ef47585f8b4d38da9bb3b610d4cbb70d",
+  "files_scanned": 84,
+  "file_findings": [],
+  "reachable_blobs_scanned": 110,
+  "history_pattern_findings_count": 0,
+  "history_finding_object_ids": [],
+  "ignored_sensitive_paths": {
+    ".env": true,
+    ".env.local": true,
+    ".streamlit/secrets.toml": true,
+    "logs/runtime.jsonl": true,
+    "private.key": true,
+    "work/private.txt": true
+  },
+  "example_trace_count": 7,
+  "example_traces_minimized": true,
+  "public_verification": {
+    "five_mock_paths": "reported verified by owner",
+    "runtime_sha": "pending",
+    "runtime_python": "pending",
+    "remote_secret_inventory": "not inspected"
+  },
+  "ci_artifact_review": {
+    "run_id": 42714484210,
+    "artifact_id": 13718015315,
+    "retention_days": 3,
+    "metadata_verified": true,
+    "archive_contents_inspected": false
+  }
+}
