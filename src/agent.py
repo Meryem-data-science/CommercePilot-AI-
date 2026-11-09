@@ -1,4 +1,5 @@
 """Orchestration bornée, contexte séparé, sorties métier rendues sans LLM."""
+from .observability import observed
 import argparse
 import copy
 from datetime import date
@@ -243,6 +244,7 @@ def render_results(names, outputs):
     return '\n\n'.join(paragraphs)
 
 
+@observed
 def run_agent(question, context, *, client=None, history=None, config_path=None):
     called, outputs, executed = [], [], []
 
