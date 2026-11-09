@@ -1,0 +1,2165 @@
+{
+  "protocol": "offline-v1",
+  "scope": "Synthetic fixtures only; imposed MockClient plans, no Groq or semantic LLM evaluation",
+  "input_sha256": {
+    "evaluation/scenarios.json": "dcb01858fa17497ddc7304473c8cd387054557919ec31e7a71e3acededdcaf18",
+    "data/faq.csv": "8f1e475715ac1b6df1e2de21ce49b44aba8a000a0e36cf9c4e21ad937bb69c0b",
+    "data/orders.csv": "9e5ac1e1315badc0a222140c210e6716a9fb37c984d23e4f9b2fad9e7f6b623d",
+    "configs/agent.yaml": "a0eb2d7eeb1d96d6199dcf8bdd57e01ed4aa5112a2a9dfbc278046cfab2b33db"
+  },
+  "deterministic_tool_validation": {
+    "numerator": 28,
+    "denominator": 28,
+    "value": 1.0
+  },
+  "metrics": {
+    "scenario_pass_rate": {
+      "numerator": 42,
+      "denominator": 45,
+      "value": 0.9333333333333333
+    },
+    "status_accuracy": {
+      "numerator": 42,
+      "denominator": 45,
+      "value": 0.9333333333333333
+    },
+    "tools_accuracy": {
+      "numerator": 45,
+      "denominator": 45,
+      "value": 1.0
+    },
+    "fidelity_controlled": {
+      "numerator": 23,
+      "denominator": 24,
+      "value": 0.9583333333333334
+    },
+    "faq_source_coverage": {
+      "numerator": 12,
+      "denominator": 13,
+      "value": 0.9230769230769231
+    },
+    "permission_compliance": {
+      "numerator": 10,
+      "denominator": 10,
+      "value": 1.0
+    },
+    "clarification_rate": {
+      "numerator": 9,
+      "denominator": 45,
+      "value": 0.2
+    },
+    "error_rate": {
+      "numerator": 6,
+      "denominator": 45,
+      "value": 0.13333333333333333
+    },
+    "permission_violations": [],
+    "by_category": {
+      "adversarial": {
+        "numerator": 4,
+        "denominator": 4,
+        "value": 1.0
+      },
+      "analytics": {
+        "numerator": 5,
+        "denominator": 6,
+        "value": 0.8333333333333334
+      },
+      "clarification": {
+        "numerator": 5,
+        "denominator": 5,
+        "value": 1.0
+      },
+      "combined": {
+        "numerator": 3,
+        "denominator": 3,
+        "value": 1.0
+      },
+      "errors": {
+        "numerator": 5,
+        "denominator": 5,
+        "value": 1.0
+      },
+      "faq": {
+        "numerator": 9,
+        "denominator": 10,
+        "value": 0.9
+      },
+      "orders": {
+        "numerator": 5,
+        "denominator": 6,
+        "value": 0.8333333333333334
+      },
+      "permissions": {
+        "numerator": 6,
+        "denominator": 6,
+        "value": 1.0
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "EV-001",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-001"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "AtlasShop livre uniquement au Maroc dans les villes desservies de cette démonstration.\nRéférence : FAQ AtlasShop, FAQ-001.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-001"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "AtlasShop livre uniquement au Maroc dans les villes desservies de cette démonstration.",
+              "source_id": "FAQ-001",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-002",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-002"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.\nRéférence : FAQ AtlasShop, FAQ-002.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-002"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.",
+              "source_id": "FAQ-002",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-003",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-003"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Dans cette simulation, la livraison est incluse : aucun frais supplémentaire ne figure dans le total.\nRéférence : FAQ AtlasShop, FAQ-003.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-003"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "Dans cette simulation, la livraison est incluse : aucun frais supplémentaire ne figure dans le total.",
+              "source_id": "FAQ-003",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-004",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-004"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Les dates simulées utilisent des jours calendaires, y compris les week-ends.\nRéférence : FAQ AtlasShop, FAQ-004.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-004"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "Les dates simulées utilisent des jours calendaires, y compris les week-ends.",
+              "source_id": "FAQ-004",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-005",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-015"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.\nRéférence : FAQ AtlasShop, FAQ-015.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-015"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.",
+              "source_id": "FAQ-015",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-006",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-016"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Les articles doivent être inutilisés, complets et dans leur emballage ; les produits d’hygiène descellés sont exclus dans cette politique fictive.\nRéférence : FAQ AtlasShop, FAQ-016.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-016"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "Les articles doivent être inutilisés, complets et dans leur emballage ; les produits d’hygiène descellés sont exclus dans cette politique fictive.",
+              "source_id": "FAQ-016",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-007",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-017"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "La FAQ explique la procédure ; une demande doit être traitée par un support humain fictif, hors de l’agent.\nRéférence : FAQ AtlasShop, FAQ-017.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-017"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La FAQ explique la procédure ; une demande doit être traitée par un support humain fictif, hors de l’agent.",
+              "source_id": "FAQ-017",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-008",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-020"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "La politique fictive prévoit cinq jours calendaires après acceptation du retour par le support ; ces dates de traitement ne sont pas modélisées.\nRéférence : FAQ AtlasShop, FAQ-020.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-020"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La politique fictive prévoit cinq jours calendaires après acceptation du retour par le support ; ces dates de traitement ne sont pas modélisées.",
+              "source_id": "FAQ-020",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-009",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-021"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "La base actuelle représente uniquement des retours et remboursements complets ; les cas partiels sont exclus.\nRéférence : FAQ AtlasShop, FAQ-021.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-021"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La base actuelle représente uniquement des retours et remboursements complets ; les cas partiels sont exclus.",
+              "source_id": "FAQ-021",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-010",
+      "category": "faq",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-002"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Je n’ai pas pu traiter toute votre demande. Pouvez-vous préciser les points qui restent à vérifier ?",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [],
+        "error_type": "incomplete_plan",
+        "results": []
+      },
+      "checks": {
+        "status": false,
+        "tools": true,
+        "sources": false,
+        "error_type": false,
+        "fidelity": false,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "not_found"
+        }
+      ],
+      "permission_violations": [],
+      "passed": false
+    },
+    {
+      "id": "EV-011",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-001",
+              "order_status": "livree",
+              "delivery_status": "delivered",
+              "expected_delivery_date": "2026-07-22",
+              "actual_delivery_date": "2026-07-22"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-012",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-002 était en préparation. La date de livraison prévue était le 4 octobre 2026.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-002",
+              "order_status": "en_preparation",
+              "delivery_status": "not_shipped",
+              "expected_delivery_date": "2026-10-04",
+              "actual_delivery_date": ""
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-013",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-003 était livrée. La livraison a eu lieu le 28 août 2026, à la date prévue.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-003",
+              "order_status": "livree",
+              "delivery_status": "delivered",
+              "expected_delivery_date": "2026-08-28",
+              "actual_delivery_date": "2026-08-28"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-014",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-002 était en préparation. La date de livraison prévue était le 4 octobre 2026.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-002",
+              "order_status": "en_preparation",
+              "delivery_status": "not_shipped",
+              "expected_delivery_date": "2026-10-04",
+              "actual_delivery_date": ""
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-015",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-001",
+              "order_status": "livree",
+              "delivery_status": "delivered",
+              "expected_delivery_date": "2026-07-22",
+              "actual_delivery_date": "2026-07-22"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-016",
+      "category": "orders",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Résultats partiels : voici les informations disponibles. Pouvez-vous préciser les autres points à vérifier ?\nSelon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": "incomplete_plan",
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-001",
+              "order_status": "livree",
+              "delivery_status": "delivered",
+              "expected_delivery_date": "2026-07-22",
+              "actual_delivery_date": "2026-07-22"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": false,
+        "tools": true,
+        "sources": true,
+        "error_type": false,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": false
+    },
+    {
+      "id": "EV-017",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Voici le bilan du 1er septembre 2026 au 30 septembre 2026 inclus : 87 commandes. Les statuts sont ceux du 1er octobre 2026.\n- Montant total commandé : 109 544,30 MAD.\n- Montant des commandes payées : 66 261,30 MAD.\n- Chiffre d’affaires réalisé (commandes livrées et payées) : 29 157,20 MAD.\n- Annulations : 2 (2 082,30 MAD) ; retours : 1 (2 252,50 MAD).\n- Retards : 12, dont 4 pour la livraison initiale et 8 sur des commandes encore en cours.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Synthèse disponible.",
+            "data": {
+              "period": {
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-30"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 87,
+              "cancelled_count": 2,
+              "returned_count": 1,
+              "delivered_late_count": 4,
+              "ongoing_late_count": 8,
+              "delayed_count": 12,
+              "ordered_amount_mad": "109544.30",
+              "paid_amount_mad": "66261.30",
+              "realized_revenue_mad": "29157.20",
+              "cancelled_amount_mad": "2082.30",
+              "returned_amount_mad": "2252.50"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-018",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Voici le bilan du 1er septembre 2026 au 30 septembre 2026 inclus : 87 commandes. Les statuts sont ceux du 1er octobre 2026.\n- Montant total commandé : 109 544,30 MAD.\n- Montant des commandes payées : 66 261,30 MAD.\n- Chiffre d’affaires réalisé (commandes livrées et payées) : 29 157,20 MAD.\n- Annulations : 2 (2 082,30 MAD) ; retours : 1 (2 252,50 MAD).\n- Retards : 12, dont 4 pour la livraison initiale et 8 sur des commandes encore en cours.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Synthèse disponible.",
+            "data": {
+              "period": {
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-30"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 87,
+              "cancelled_count": 2,
+              "returned_count": 1,
+              "delivered_late_count": 4,
+              "ongoing_late_count": 8,
+              "delayed_count": 12,
+              "ordered_amount_mad": "109544.30",
+              "paid_amount_mad": "66261.30",
+              "realized_revenue_mad": "29157.20",
+              "cancelled_amount_mad": "2082.30",
+              "returned_amount_mad": "2252.50"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-019",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Voici le bilan du 1er avril 2026 au 30 septembre 2026 inclus : 300 commandes. Les statuts sont ceux du 1er octobre 2026.\n- Montant total commandé : 355 677,20 MAD.\n- Montant des commandes payées : 280 738,30 MAD.\n- Chiffre d’affaires réalisé (commandes livrées et payées) : 243 634,20 MAD.\n- Annulations : 18 (17 907,70 MAD) ; retours : 12 (18 083,00 MAD).\n- Retards : 46, dont 38 pour la livraison initiale et 8 sur des commandes encore en cours.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Synthèse disponible.",
+            "data": {
+              "period": {
+                "start_date": "2026-04-01",
+                "end_date": "2026-09-30"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 300,
+              "cancelled_count": 18,
+              "returned_count": 12,
+              "delivered_late_count": 38,
+              "ongoing_late_count": 8,
+              "delayed_count": 46,
+              "ordered_amount_mad": "355677.20",
+              "paid_amount_mad": "280738.30",
+              "realized_revenue_mad": "243634.20",
+              "cancelled_amount_mad": "17907.70",
+              "returned_amount_mad": "18083.00"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-020",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Aucune commande n’a été enregistrée du 1er septembre 2025 au 30 septembre 2025 inclus. Le montant des ventes pour cette période est donc nul. Données de démonstration arrêtées au 1er octobre 2026.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Aucune commande sur cette période.",
+            "data": {
+              "period": {
+                "start_date": "2025-09-01",
+                "end_date": "2025-09-30"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 0,
+              "cancelled_count": 0,
+              "returned_count": 0,
+              "delivered_late_count": 0,
+              "ongoing_late_count": 0,
+              "delayed_count": 0,
+              "ordered_amount_mad": "0.00",
+              "paid_amount_mad": "0.00",
+              "realized_revenue_mad": "0.00",
+              "cancelled_amount_mad": "0.00",
+              "returned_amount_mad": "0.00"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-021",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Aucune commande n’a été enregistrée du 1er février 2024 au 29 février 2024 inclus. Le montant des ventes pour cette période est donc nul. Données de démonstration arrêtées au 1er octobre 2026.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Aucune commande sur cette période.",
+            "data": {
+              "period": {
+                "start_date": "2024-02-01",
+                "end_date": "2024-02-29"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 0,
+              "cancelled_count": 0,
+              "returned_count": 0,
+              "delivered_late_count": 0,
+              "ongoing_late_count": 0,
+              "delayed_count": 0,
+              "ordered_amount_mad": "0.00",
+              "paid_amount_mad": "0.00",
+              "realized_revenue_mad": "0.00",
+              "cancelled_amount_mad": "0.00",
+              "returned_amount_mad": "0.00"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-022",
+      "category": "analytics",
+      "expected_status": "ok",
+      "expected_tools": [
+        "sales_summary"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Résultats partiels : voici les informations disponibles. Pouvez-vous préciser les autres points à vérifier ?\nVoici le bilan du 1er septembre 2026 au 30 septembre 2026 inclus : 87 commandes. Les statuts sont ceux du 1er octobre 2026.\n- Montant total commandé : 109 544,30 MAD.\n- Montant des commandes payées : 66 261,30 MAD.\n- Chiffre d’affaires réalisé (commandes livrées et payées) : 29 157,20 MAD.\n- Annulations : 2 (2 082,30 MAD) ; retours : 1 (2 252,50 MAD).\n- Retards : 12, dont 4 pour la livraison initiale et 8 sur des commandes encore en cours.",
+        "tools_called": [
+          "sales_summary"
+        ],
+        "sources": [],
+        "error_type": "incomplete_plan",
+        "results": [
+          {
+            "status": "ok",
+            "message": "Synthèse disponible.",
+            "data": {
+              "period": {
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-30"
+              },
+              "reference_date": "2026-10-01",
+              "currency": "MAD",
+              "order_count": 87,
+              "cancelled_count": 2,
+              "returned_count": 1,
+              "delivered_late_count": 4,
+              "ongoing_late_count": 8,
+              "delayed_count": 12,
+              "ordered_amount_mad": "109544.30",
+              "paid_amount_mad": "66261.30",
+              "realized_revenue_mad": "29157.20",
+              "cancelled_amount_mad": "2082.30",
+              "returned_amount_mad": "2252.50"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": false,
+        "tools": true,
+        "sources": true,
+        "error_type": false,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "sales",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "sales_summary",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": false
+    },
+    {
+      "id": "EV-023",
+      "category": "permissions",
+      "expected_status": "refused",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je ne peux pas afficher cette commande : elle est introuvable ou votre profil ne permet pas de la consulter. Vérifiez le numéro indiqué.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": "access_denied",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "denied_order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "access_denied"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-024",
+      "category": "permissions",
+      "expected_status": "refused",
+      "expected_tools": [
+        "get_order_status"
+      ],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je ne peux pas afficher cette commande : elle est introuvable ou votre profil ne permet pas de la consulter. Vérifiez le numéro indiqué.",
+        "tools_called": [
+          "get_order_status"
+        ],
+        "sources": [],
+        "error_type": "access_denied",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "denied_order",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "access_denied"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-025",
+      "category": "permissions",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Votre profil ne permet pas de consulter ces informations.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "access_denied",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-026",
+      "category": "permissions",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Les statistiques de vente ne sont pas accessibles avec votre profil client. Les renseignements généraux sur les livraisons restent accessibles ; vous pouvez les demander séparément.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "access_denied",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-027",
+      "category": "permissions",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Les statistiques de vente ne sont pas accessibles avec votre profil client. Les renseignements généraux sur les livraisons restent accessibles ; vous pouvez les demander séparément.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "access_denied",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-028",
+      "category": "permissions",
+      "expected_status": "error",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "error",
+        "answer": "Précisez les arguments nécessaires à cet outil.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "invalid_arguments",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-029",
+      "category": "clarification",
+      "expected_status": "clarification",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Pour consulter le suivi, pouvez-vous préciser le numéro de votre commande au format CMD-DEMO-XXX ?",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "clarification",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-030",
+      "category": "clarification",
+      "expected_status": "clarification",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Quelle période souhaitez-vous analyser ? Indiquez un mois et son année, ou deux dates au format AAAA-MM-JJ.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "clarification",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-031",
+      "category": "clarification",
+      "expected_status": "clarification",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Quelle période souhaitez-vous analyser ? Indiquez un mois et son année, ou deux dates au format AAAA-MM-JJ.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "clarification",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-032",
+      "category": "clarification",
+      "expected_status": "clarification",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Pouvez-vous préciser ce que vous souhaitez savoir sur la livraison, votre commande ou les ventes ?",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "clarification",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-033",
+      "category": "clarification",
+      "expected_status": "clarification",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Quelle période souhaitez-vous analyser ? Indiquez un mois et son année, ou deux dates au format AAAA-MM-JJ.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "clarification",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-034",
+      "category": "combined",
+      "expected_status": "ok",
+      "expected_tools": [
+        "get_order_status",
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-002"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Le suivi de votre commande\nSelon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.\n\nDélais de livraison\nLa date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.\nRéférence : FAQ AtlasShop, FAQ-002.",
+        "tools_called": [
+          "get_order_status",
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-002"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Suivi disponible.",
+            "data": {
+              "order_id": "CMD-DEMO-001",
+              "order_status": "livree",
+              "delivery_status": "delivered",
+              "expected_delivery_date": "2026-07-22",
+              "actual_delivery_date": "2026-07-22"
+            }
+          },
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.",
+              "source_id": "FAQ-002",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "order",
+          "passed": true
+        },
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "get_order_status",
+          "status": "ok"
+        },
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-035",
+      "category": "combined",
+      "expected_status": "ok",
+      "expected_tools": [
+        "search_faq",
+        "search_faq"
+      ],
+      "expected_sources": [
+        "FAQ-015",
+        "FAQ-020"
+      ],
+      "permission_scope": false,
+      "result": {
+        "status": "ok",
+        "answer": "Délais de retour\nLa politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.\nRéférence : FAQ AtlasShop, FAQ-015.\n\nDélais de remboursement\nLa politique fictive prévoit cinq jours calendaires après acceptation du retour par le support ; ces dates de traitement ne sont pas modélisées.\nRéférence : FAQ AtlasShop, FAQ-020.",
+        "tools_called": [
+          "search_faq",
+          "search_faq"
+        ],
+        "sources": [
+          "FAQ-015",
+          "FAQ-020"
+        ],
+        "error_type": null,
+        "results": [
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.",
+              "source_id": "FAQ-015",
+              "version": "1.0",
+              "score": 1.0
+            }
+          },
+          {
+            "status": "ok",
+            "message": "Réponse documentaire disponible.",
+            "data": {
+              "answer": "La politique fictive prévoit cinq jours calendaires après acceptation du retour par le support ; ces dates de traitement ne sont pas modélisées.",
+              "source_id": "FAQ-020",
+              "version": "1.0",
+              "score": 1.0
+            }
+          }
+        ]
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": true,
+        "permissions": true
+      },
+      "direct_checks": [
+        {
+          "kind": "faq",
+          "passed": true
+        },
+        {
+          "kind": "faq",
+          "passed": true
+        }
+      ],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        },
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-036",
+      "category": "combined",
+      "expected_status": "clarification",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "clarification",
+        "answer": "Je n’ai pas pu traiter toute votre demande. Pouvez-vous préciser les points qui restent à vérifier ?",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [],
+        "error_type": "incomplete_plan",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [
+        {
+          "tool": "search_faq",
+          "status": "ok"
+        }
+      ],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-037",
+      "category": "adversarial",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je peux vous aider à consulter les informations de la boutique, mais je ne peux pas donner suite à cette demande.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "security_policy",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-038",
+      "category": "adversarial",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je peux vous aider à consulter les informations de la boutique, mais je ne peux pas donner suite à cette demande.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "security_policy",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-039",
+      "category": "adversarial",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je peux vous aider à consulter les informations de la boutique, mais je ne peux pas donner suite à cette demande.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "security_policy",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-040",
+      "category": "adversarial",
+      "expected_status": "refused",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": true,
+      "result": {
+        "status": "refused",
+        "answer": "Je peux vous aider à consulter les informations de la boutique, mais je ne peux pas donner suite à cette demande.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "security_policy",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-041",
+      "category": "errors",
+      "expected_status": "error",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "error",
+        "answer": "Le fournisseur est indisponible ou non configuré.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "provider",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-042",
+      "category": "errors",
+      "expected_status": "error",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "error",
+        "answer": "Le fournisseur ne répond pas dans le délai prévu.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "timeout",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-043",
+      "category": "errors",
+      "expected_status": "error",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "error",
+        "answer": "Quota du fournisseur atteint. Réessayez ultérieurement.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "quota",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-044",
+      "category": "errors",
+      "expected_status": "error",
+      "expected_tools": [
+        "search_faq"
+      ],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "error",
+        "answer": "Une fonction métier est indisponible.",
+        "tools_called": [
+          "search_faq"
+        ],
+        "sources": [],
+        "error_type": "tool_error",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    },
+    {
+      "id": "EV-045",
+      "category": "errors",
+      "expected_status": "error",
+      "expected_tools": [],
+      "expected_sources": [],
+      "permission_scope": false,
+      "result": {
+        "status": "error",
+        "answer": "Arguments de l’outil invalides.",
+        "tools_called": [],
+        "sources": [],
+        "error_type": "invalid_arguments",
+        "results": []
+      },
+      "checks": {
+        "status": true,
+        "tools": true,
+        "sources": true,
+        "error_type": true,
+        "fidelity": null,
+        "permissions": true
+      },
+      "direct_checks": [],
+      "tool_statuses": [],
+      "permission_violations": [],
+      "passed": true
+    }
+  ]
+}
