@@ -1,2 +1,5 @@
-# SDK officiel ; Streamlit et MLflow restent hors de la tâche 4.
+# SDK officiel de la tâche 4 ; MLflow reste hors du périmètre actuel.
 groq==1.7.0
+
+# Interface de la tâche 5
+streamlit==1.51.0
