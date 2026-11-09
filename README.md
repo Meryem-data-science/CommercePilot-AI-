@@ -16,7 +16,7 @@ Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter u
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. Aucun orchestrateur, test d'agent complet, interface, pipeline CI/CD ou déploiement n'est réalisé. Groq, Streamlit et MLflow restent à intégrer ; GitHub Actions reste à configurer. Aucune commande de lancement d'application n'est disponible.
+Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Aucune interface, CI/CD ou déploiement n'est réalisé ; les appels Groq distants restent non vérifiés. La vérification distante Groq, Streamlit, MLflow et GitHub Actions restent à réaliser. Une CLI mock est disponible ; aucune interface web n'est créée.
 
 ## Documentation
 
@@ -26,7 +26,7 @@ Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement 
 
 ## Architecture prévisionnelle
 
-L'interface Streamlit transmettra une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci pourra solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précéderont l'accès aux sources synthétiques ; les outils sensibles réappliqueront les contrôles. La réponse devra rester fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit cette cible, sans composant applicatif implémenté.
+L'interface Streamlit transmettra une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci pourra solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précéderont l'accès aux sources synthétiques ; les outils sensibles réappliqueront les contrôles. La réponse devra rester fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
 
 ## Structure du dépôt
 
@@ -34,10 +34,10 @@ L'interface Streamlit transmettra une question et un contexte de rôle simulé �
 CommercePilot-AI-/
 ├── .github/workflows/  # Réservé à la CI/CD future ; aucun workflow actif
 ├── src/
-│   └── tools/         # Outils futurs, non implémentés
-├── tests/             # Tests futurs, aucun test applicatif
-├── data/              # Données synthétiques futures
-├── evaluation/        # Scénarios et évaluations futurs
+│   └── tools/         # Trois outils métier en lecture seule
+├── tests/             # Tests de données, outils et agent mock
+├── data/              # Données AtlasShop et scripts de validation
+├── evaluation/        # Réservé aux évaluations futures
 ├── docs/              # Cadrage, architecture, rapport progressif
 ├── .python-version    # Version cible exacte : 3.11.14
 ├── requirements.txt   # Aucune dépendance tierce à cette étape
@@ -102,7 +102,7 @@ AtlasShop contient 50 produits, 30 clients fictifs, 300 commandes, 600 lignes et
 .venv/bin/python -m unittest discover -s tests -p test_data_validation.py -v
 ```
 
-Le générateur refuse d'écraser les fichiers existants. La graine par défaut est `202627`, la période avril–septembre 2026 et la référence fixe le 1er octobre 2026. Voir le [dictionnaire et les KPI](docs/data_dictionary.md) et la [méthode et les validations](docs/data_generation.md). Ces contrôles portent sur les données, sans tester un agent. La tâche 3.B fournit les outils locaux ; la tâche 4 n'est pas engagée.
+Le générateur refuse d'écraser les fichiers existants. La graine par défaut est `202627`, la période avril–septembre 2026 et la référence fixe le 1er octobre 2026. Voir le [dictionnaire et les KPI](docs/data_dictionary.md) et la [méthode et les validations](docs/data_generation.md). Ces contrôles portent sur les données, sans tester un agent. La tâche 3.B fournit les outils locaux ; l'orchestrateur est décrit ci-dessous (tâche 4).
 
 
 ## Outils métier — tâche 3.B
@@ -115,3 +115,18 @@ Les contrats, permissions, limites et exemples vérifiés sont décrits dans [do
 ```
 
 Le contexte de rôle est simulé et ne constitue pas une authentification réelle.
+
+
+## Orchestration — tâche 4
+
+Le contexte utilisateur est fourni séparément à `run_agent` ; le modèle propose des appels sans rôle ni identité. Les permissions, arguments et limites sont contrôlés avant exécution. Le rendu final repose exclusivement sur les résultats locaux ; FAQ et données métier ne sont pas renvoyées au modèle. Les statuts d'erreur et refus restent déterministes. Voir [le contrat et la configuration](docs/agent.md).
+
+```bash
+PIP_CACHE_DIR=/tmp/commercepilot-pip-cache .venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m src.agent --mode mock
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+Le mock est scripté et fonctionne sans clé ni réseau. Pour le mode réel, injecter `GROQ_API_KEY` de manière sécurisée et choisir un `GROQ_MODEL` compatible tool calling ; aucun modèle n'est codé en dur. Ne pas placer de secret dans les fichiers versionnés. La commande facultative `.venv/bin/python -m src.agent --mode groq --question 'Quels sont les délais de livraison ?'` n'a pas été exécutée avec l'API distante.
+
+`configs/agent.yaml` utilise la syntaxe JSON, sous-ensemble YAML : 3 itérations, 3 appels d'outils, timeout API de 10 secondes, sortie de 512 tokens, entrée de 1500 caractères et 4 questions d'historique. L’identifiant et la période doivent être explicites : deux dates ISO ou un mois français avec son année (par exemple septembre 2026). Le contexte de rôle reste simulé et le filtre lexical d'injection reste limité. En cas de `provider`, vérifier variables et modèle sans afficher la clé ; `timeout` et `quota` n'entraînent aucune relance automatique. La tâche 5 n'est pas commencée.

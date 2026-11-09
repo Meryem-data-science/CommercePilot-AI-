@@ -1,0 +1,8 @@
+{
+  "max_iterations": 3,
+  "max_tool_calls": 3,
+  "api_timeout_seconds": 10,
+  "max_output_tokens": 512,
+  "max_input_chars": 1500,
+  "max_history_messages": 4
+}

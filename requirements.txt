@@ -1,2 +1,2 @@
-# Tâche 2 : aucune dépendance tierce nécessaire.
-# Ajouter et fixer les versions de Streamlit, Groq et MLflow aux étapes concernées.
+# SDK officiel ; Streamlit et MLflow restent hors de la tâche 4.
+groq==1.7.0
