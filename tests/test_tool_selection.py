@@ -6,8 +6,7 @@ from unittest.mock import patch
 import httpx
 from groq import Groq
 from src.agent import run_agent
-from src.llm_client import GroqClient, MockClient, ProviderError
-from src.schemas import TOOL_SCHEMAS, load_config
+from src.llm_client import GroqClient, MockClient
 
 CLIENT = {'role':'client','customer_id':'CLI-001'}
 ANALYST = {'role':'analyste'}

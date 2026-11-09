@@ -654,3 +654,58 @@ Les trois attentes restent `ok` ; l'agent n'est pas corrigé dans cette tâche e
 Limites : corpus petit, annotations manuelles, plans imposés, pas de mesure de latence ou de qualité conversationnelle utilisateur et pas d'évaluation LLM réelle. Le calcul financier indépendant reste fondé sur les mêmes règles documentées et pourrait partager une erreur conceptuelle de définition. Les sondes de confidentialité vérifient les sorties structurées et certaines valeurs identifiantes/financières, sans prétendre détecter arbitrairement toute fuite sémantique. Les règles de sécurité et leurs limites lexicales restent celles de l'agent existant.
 
 Captures utiles au deuxième passage du rapport : tableau des métriques avec dénominateurs ; tableau des 45 verdicts ; détail des trois échecs ; liste explicite des violations vide ; extrait d'annotation et oracle CSV correspondant. Conserver les JSON et empreintes comme preuves techniques. Aucune capture n'est fabriquée. Aucun secret exposé, aucun changement de design, de données, d'observabilité ou de permission, aucun commit ni push ; tâche 8 non commencée.
+
+
+## Qualité logicielle, tests avancés et quality gates — tâche 8
+
+### Objectifs et périmètre
+
+La branche `feat/quality-assurance` part de `origin/main` au commit `c07d8d7`, après fusion de la tâche 7. Cette étape renforce les garanties de non-régression sans modifier le comportement de l'application. Aucun changement n'a été apporté à `src/`, aux données AtlasShop, à l'orchestrateur, à l'observabilité, au design Streamlit ni aux règles de permission. Les résultats et annotations des 45 scénarios restent inchangés. Il n'y a ni service payant, ni appel Groq réel, ni workflow GitHub Actions.
+
+### Tests ajoutés
+
+`tests/test_advanced_quality.py` ajoute 14 tests, plusieurs paramétrés : entrées invalides et frontière de 1500 caractères ; historique et contexte malformés ; alternance de clients sans contamination ; séparation du contexte et des schémas proposés ; injections avec accents/casse et historique malveillant ; masquage des résultats après refus tardif ; validation atomique des lots combinés ; arguments JSON malformés et identifiants d'appel dupliqués ; demande combinée incomplète ; résultats métier invalides avec sink en panne ; erreurs HTTP 503 et timeout simulés sans relance ; sinks concurrents isolés ; stabilité exacte des réponses répétées.
+
+`tests/test_quality_gates.py` ajoute cinq tests des contrôles eux-mêmes : référence figée valide, violation de permission bloquante même hors du sous-ensemble sensible, régression d'un scénario précédemment réussi malgré un score moyen constant, métriques falsifiées/contrôle direct en recul et scanner de secrets ne révélant jamais la valeur détectée.
+
+Les 120 tests précédents sont conservés. La suite complète compte **139 tests exécutés et réussis**, sans erreur, échec, test ignoré ou échec attendu. La garde réseau globale de `quality/test_suite.py` bloque `socket.connect` et `socket.create_connection`, y compris pendant les tests Streamlit ; les erreurs Groq sont produites par transport HTTP simulé. La couverture utilise un processus distinct et produit un résultat machine lisible des tests. Les tests détectent des régressions dans le périmètre prévu ; ils ne prouvent pas une compréhension LLM réelle.
+
+### Outils statiques et corrections
+
+Les seules dépendances de développement ajoutées sont **Ruff 0.14.4** et **coverage.py 7.11.3**, fixées dans `requirements-dev.txt`, séparées des dépendances de production. `pyproject.toml` configure la cible Python 3.11, les familles Ruff E4/E9/F et les règles de sécurité ciblées S102, S301–S308 et S324 (selon la liste exacte du fichier : pas toutes les règles intermédiaires). Ces dernières ciblent notamment exécution dynamique, désérialisation dangereuse et primitives cryptographiques faibles. Ce choix évite une dépendance de sécurité supplémentaire et ne constitue pas un audit complet.
+
+Le premier passage Ruff a identifié **six imports inutilisés dans quatre fichiers de tests existants**. Seuls ces imports ont été retirés. Les points-virgules et le style historique ne sont pas reformatés globalement ; aucune logique métier n'est corrigée automatiquement. Le lint final ne présente aucune violation configurée. Un import inutilisé a également été retiré d'un nouveau fichier en cours d'écriture.
+
+Un premier passage des nouveaux tests a présenté un échec d'assertion dans le test de gate de permission. L'injection concernait un scénario hors du sous-ensemble sensible : la métrique de ce sous-ensemble restait identique, mais le contrôle global bloquait correctement. L'assertion a été corrigée pour vérifier précisément ce comportement, sans modifier les seuils. La suite finale est intégralement réussie. Aucun problème fonctionnel exigeant un changement des réponses de l'agent n'a été corrigé dans cette tâche.
+
+### Gates locaux et seuils fixés
+
+La commande centrale est `.venv/bin/python -m quality.check`. Elle écrit `evaluation/quality_results.json` et `evaluation/quality_report.md`. Les journaux de commandes, le résultat détaillé des tests et le JSON de couverture par module restent dans `work/quality/`, ignoré par Git. Le code de sortie est non nul si un gate échoue.
+
+| Gate | Critère | Verdict observé |
+| --- | --- | --- |
+| Tests hors ligne | Suite réussie, au moins les 120 tests de référence, aucun skip/échec attendu | 139/139, réussi |
+| AtlasShop | Validateur officiel | Réussi |
+| Ruff | Aucune violation des règles configurées | Réussi |
+| Couverture mesurée | Mesure valide sur les sources, pas de seuil arbitraire ajouté après coup | Réussi |
+| Seuils d'évaluation | 45 scénarios, ≥42 réussis, 28/28 directs, zéro violation | 42/45 et 28/28, réussi |
+| Reproductibilité | Deux rapports d'évaluation exactement identiques | Réussi |
+| Cohérence de la référence | Nouvelle évaluation identique aux résultats versionnés de tâche 7 | Réussi |
+| Recherche de secrets | Aucun format de clé, fichier sensible ou secret d'environnement détecté dans les fichiers contrôlés | Réussi |
+| Diff Git | `git diff --check` indexé et non indexé | Réussi |
+
+`quality/baseline.json` a été créé avant le premier lancement avec les seuils demandés, la liste des 42 identifiants auparavant réussis et l'empreinte du corpus. La réussite de nouveaux cas ne peut masquer la régression d'un cas auparavant réussi. L'empreinte empêche un changement silencieux des annotations. Les métriques sont recalculées et comparées aux résultats ; la référence n'est jamais réécrite par le gate. Toute violation de permission bloque indépendamment du score global, même hors des dix scénarios sensibles. Les pannes attendues et correctement gérées sont des scénarios réussis, sans être confondues avec un incident de production.
+
+Les trois limites EV-010 (recherche FAQ lexicale), EV-016 et EV-022 (paraphrases non reconnues par la complétude) restent documentées. Les 42/45 réussites, 28/28 contrôles directs, 10/10 scénarios sensibles sans violation et les métriques détaillées sont inchangés. Ces résultats portent sur des plans simulés, pas sur le routage spontané Groq.
+
+### Couverture effectivement mesurée
+
+Sur les neuf modules Python de `src/`, coverage.py mesure **588 lignes couvertes sur 628 (93,63 %)** et **215 branches couvertes sur 238 (90,34 %)**, soit **92,73 % combinés**. Il reste 40 lignes et 23 branches non couvertes, dont 21 branches partielles. Les valeurs et modules exacts sont dans `quality_results.json` et le rapport qualité. `app.py`, les scripts d'évaluation, les outils de gate, les tests et les dépendances ne font pas partie de ce pourcentage ; les parcours AppTest existants continuent néanmoins de vérifier l'interface. Aucun seuil de couverture n'est fixé rétroactivement pour valoriser ce chiffre. Une couverture élevée ne prouve pas la force des assertions ni la sécurité exhaustive.
+
+### Intérêt MLOps, preuves et limites
+
+Ces contrôles forment un contrat local de promotion : comportement reproductible, corpus figé, absence de recul des permissions, cohérence des métriques et séparation des pannes simulées et de la performance réelle. Ils préparent une future automatisation sans commencer sa configuration. Les preuves à conserver pour la révision sont le tableau des neuf gates, le résultat des 139 tests, la couverture par module, l'empreinte de référence et le détail des trois échecs connus. Captures utiles : synthèse qualité, couverture et verdicts d'évaluation ; aucune capture n'est fabriquée.
+
+Le scanner contrôle les fichiers versionnés et les fichiers non ignorés, et ne renvoie que le nom de fichier et la catégorie du problème. Il ne garantit pas la détection d'un secret arbitraire, encodé, absent de l'environnement ou d'une donnée personnelle non reconnaissable. Les fichiers ignorés non destinés à la publication ne sont pas couverts. Les règles statiques sont volontairement ciblées ; les limites lexicales de l'agent et l'identité simulée restent inchangées. Les gardes réseau visent les appels usuels Python, pas un confinement système contre un processus hostile. Les preuves de couverture varient si le code ou les tests changent ; aucun engagement de production n'est revendiqué.
+
+Aucun commit ni push. La tâche 9 et GitHub Actions ne sont pas commencées.

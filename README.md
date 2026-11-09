@@ -171,3 +171,15 @@ Chaque appel à `run_agent` produit une trace minimale dans `logs/agent_events.j
 ```
 
 L'évaluation est exclusivement mock et génère sept traces anonymisées, `evaluation/monitoring_summary.json` et un tableau lisible dans `evaluation/monitoring_summary.md`. Elle inclut volontairement des refus et pannes ; ses taux ne représentent pas la fiabilité de Groq. Pour les traces runtime locales, utiliser `.venv/bin/python -m src.observability`. Les formules, mesures, limites de rétention et règles de confidentialité figurent dans la section de tâche 6 du rapport progressif.
+
+
+## Qualité logicielle locale — tâche 8
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt -r requirements-dev.txt
+.venv/bin/python -m quality.check
+```
+
+Cette commande exécute les tests sous garde réseau, mesure la couverture de `src/`, lance le validateur AtlasShop et Ruff, contrôle les seuils de la tâche 7, les métriques et la reproductibilité, recherche des secrets dans les fichiers versionnés/non ignorés et vérifie les diffs Git. Elle renvoie 0 si tous les gates passent, 1 sinon. Les résultats sont dans `evaluation/quality_results.json` et `evaluation/quality_report.md`, les preuves intermédiaires dans `work/quality/` (ignoré par Git).
+
+Les seuils sont figés dans `quality/baseline.json` : 45 scénarios, au moins 42 réussis, aucun recul d'un scénario précédemment réussi, 28/28 contrôles directs et aucune violation de permission. Les échecs connus EV-010, EV-016 et EV-022 restent documentés ; les résultats de la tâche 7 ne sont jamais réécrits automatiquement. Le lint ciblé et la couverture ne remplacent pas un audit de sécurité. Aucun workflow GitHub Actions n'est créé.

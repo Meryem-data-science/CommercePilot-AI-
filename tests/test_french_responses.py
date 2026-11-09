@@ -7,7 +7,7 @@ from src.llm_client import MockClient
 from src.tools.orders import get_order_status
 from src.tools.faq import search_faq
 from src.tools.analytics import sales_summary
-from test_tool_selection import Capture, CLIENT, ANALYST, FAQ, faq_call
+from test_tool_selection import Capture, CLIENT, FAQ, faq_call
 from test_agent_closure import order_call
 
 PERIOD={'start_date':'2026-09-01','end_date':'2026-09-30'}

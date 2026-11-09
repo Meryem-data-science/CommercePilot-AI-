@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py311"
+exclude = [".venv", "logs", ".git"]
+
+[tool.ruff.lint]
+# Contrôles ciblés : imports, noms/syntaxe et quelques primitives dangereuses.
+# Pas de reformatage global du code historique à points-virgules.
+select = ["E4", "E9", "F", "S102", "S301", "S302", "S303", "S304", "S305", "S306", "S307", "S308", "S324"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+data_file = "work/quality/.coverage"
+
+[tool.coverage.report]
+show_missing = true

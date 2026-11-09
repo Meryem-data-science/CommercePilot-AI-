@@ -1,0 +1,285 @@
+{
+  "scope": "local offline quality gates; not production or real Groq metrics",
+  "versions": {
+    "ruff": "0.14.4",
+    "coverage": "7.11.3"
+  },
+  "passed": true,
+  "gates": [
+    {
+      "name": "tests_offline",
+      "passed": true,
+      "detail": {
+        "run": 139,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "expected_failures": 0,
+        "unexpected_successes": 0,
+        "successful": true
+      }
+    },
+    {
+      "name": "atlasshop",
+      "passed": true,
+      "detail": "Validateur officiel, données inchangées"
+    },
+    {
+      "name": "ruff",
+      "passed": true,
+      "detail": "Ruff 0.14.4 : E4, E9, F et règles de sécurité ciblées du pyproject.toml"
+    },
+    {
+      "name": "coverage_measured",
+      "passed": true,
+      "detail": {
+        "covered_lines": 588,
+        "num_statements": 628,
+        "percent_covered": 92.72517321016166,
+        "percent_covered_display": "93",
+        "missing_lines": 40,
+        "excluded_lines": 0,
+        "num_branches": 238,
+        "num_partial_branches": 21,
+        "covered_branches": 215,
+        "missing_branches": 23
+      }
+    },
+    {
+      "name": "evaluation_thresholds",
+      "passed": true,
+      "detail": {
+        "problems": [],
+        "metrics": {
+          "scenario_pass_rate": {
+            "numerator": 42,
+            "denominator": 45,
+            "value": 0.9333333333333333
+          },
+          "status_accuracy": {
+            "numerator": 42,
+            "denominator": 45,
+            "value": 0.9333333333333333
+          },
+          "tools_accuracy": {
+            "numerator": 45,
+            "denominator": 45,
+            "value": 1.0
+          },
+          "fidelity_controlled": {
+            "numerator": 23,
+            "denominator": 24,
+            "value": 0.9583333333333334
+          },
+          "faq_source_coverage": {
+            "numerator": 12,
+            "denominator": 13,
+            "value": 0.9230769230769231
+          },
+          "permission_compliance": {
+            "numerator": 10,
+            "denominator": 10,
+            "value": 1.0
+          },
+          "clarification_rate": {
+            "numerator": 9,
+            "denominator": 45,
+            "value": 0.2
+          },
+          "error_rate": {
+            "numerator": 6,
+            "denominator": 45,
+            "value": 0.13333333333333333
+          },
+          "permission_violations": [],
+          "by_category": {
+            "adversarial": {
+              "numerator": 4,
+              "denominator": 4,
+              "value": 1.0
+            },
+            "analytics": {
+              "numerator": 5,
+              "denominator": 6,
+              "value": 0.8333333333333334
+            },
+            "clarification": {
+              "numerator": 5,
+              "denominator": 5,
+              "value": 1.0
+            },
+            "combined": {
+              "numerator": 3,
+              "denominator": 3,
+              "value": 1.0
+            },
+            "errors": {
+              "numerator": 5,
+              "denominator": 5,
+              "value": 1.0
+            },
+            "faq": {
+              "numerator": 9,
+              "denominator": 10,
+              "value": 0.9
+            },
+            "orders": {
+              "numerator": 5,
+              "denominator": 6,
+              "value": 0.8333333333333334
+            },
+            "permissions": {
+              "numerator": 6,
+              "denominator": 6,
+              "value": 1.0
+            }
+          }
+        },
+        "direct": {
+          "numerator": 28,
+          "denominator": 28,
+          "value": 1.0
+        }
+      }
+    },
+    {
+      "name": "evaluation_reproducible",
+      "passed": true,
+      "detail": "Deux exécutions sans réseau, comparaison exacte"
+    },
+    {
+      "name": "reference_results_consistent",
+      "passed": true,
+      "detail": "Résultats versionnés non réécrits"
+    },
+    {
+      "name": "secret_scan",
+      "passed": true,
+      "detail": {
+        "files_checked": 66,
+        "issues": []
+      }
+    },
+    {
+      "name": "git_diff_check",
+      "passed": true,
+      "detail": "Diff non indexé et indexé"
+    }
+  ],
+  "known_evaluation_failures": [
+    "EV-010",
+    "EV-016",
+    "EV-022"
+  ],
+  "coverage_by_module": {
+    "src/agent.py": {
+      "covered_lines": 246,
+      "num_statements": 258,
+      "percent_covered": 95.18716577540107,
+      "percent_covered_display": "95",
+      "missing_lines": 12,
+      "excluded_lines": 0,
+      "num_branches": 116,
+      "num_partial_branches": 4,
+      "covered_branches": 110,
+      "missing_branches": 6
+    },
+    "src/llm_client.py": {
+      "covered_lines": 46,
+      "num_statements": 48,
+      "percent_covered": 96.42857142857143,
+      "percent_covered_display": "96",
+      "missing_lines": 2,
+      "excluded_lines": 0,
+      "num_branches": 8,
+      "num_partial_branches": 0,
+      "covered_branches": 8,
+      "missing_branches": 0
+    },
+    "src/observability.py": {
+      "covered_lines": 75,
+      "num_statements": 84,
+      "percent_covered": 88.04347826086956,
+      "percent_covered_display": "88",
+      "missing_lines": 9,
+      "excluded_lines": 0,
+      "num_branches": 8,
+      "num_partial_branches": 2,
+      "covered_branches": 6,
+      "missing_branches": 2
+    },
+    "src/presentation.py": {
+      "covered_lines": 26,
+      "num_statements": 27,
+      "percent_covered": 93.93939393939394,
+      "percent_covered_display": "94",
+      "missing_lines": 1,
+      "excluded_lines": 0,
+      "num_branches": 6,
+      "num_partial_branches": 1,
+      "covered_branches": 5,
+      "missing_branches": 1
+    },
+    "src/schemas.py": {
+      "covered_lines": 59,
+      "num_statements": 64,
+      "percent_covered": 91.48936170212765,
+      "percent_covered_display": "91",
+      "missing_lines": 5,
+      "excluded_lines": 0,
+      "num_branches": 30,
+      "num_partial_branches": 3,
+      "covered_branches": 27,
+      "missing_branches": 3
+    },
+    "src/tools/analytics.py": {
+      "covered_lines": 35,
+      "num_statements": 35,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "num_branches": 18,
+      "num_partial_branches": 0,
+      "covered_branches": 18,
+      "missing_branches": 0
+    },
+    "src/tools/common.py": {
+      "covered_lines": 51,
+      "num_statements": 61,
+      "percent_covered": 77.52808988764045,
+      "percent_covered_display": "78",
+      "missing_lines": 10,
+      "excluded_lines": 0,
+      "num_branches": 28,
+      "num_partial_branches": 10,
+      "covered_branches": 18,
+      "missing_branches": 10
+    },
+    "src/tools/faq.py": {
+      "covered_lines": 29,
+      "num_statements": 30,
+      "percent_covered": 95.23809523809524,
+      "percent_covered_display": "95",
+      "missing_lines": 1,
+      "excluded_lines": 0,
+      "num_branches": 12,
+      "num_partial_branches": 1,
+      "covered_branches": 11,
+      "missing_branches": 1
+    },
+    "src/tools/orders.py": {
+      "covered_lines": 21,
+      "num_statements": 21,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "num_branches": 12,
+      "num_partial_branches": 0,
+      "covered_branches": 12,
+      "missing_branches": 0
+    }
+  },
+  "coverage_scope": "src uniquement ; couverture de branches incluse, sans seuil de pourcentage imposé"
+}

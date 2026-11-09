@@ -36,3 +36,6 @@ dist/
 *.egg-info/
 mlruns/
 mlartifacts/
+
+# Preuves intermédiaires des quality gates
+work/

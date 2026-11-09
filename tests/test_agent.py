@@ -1,5 +1,4 @@
 """Tests réseau interdits : mocks scriptés et transport HTTP local simulé."""
-import copy
 import json
 import os
 from pathlib import Path
