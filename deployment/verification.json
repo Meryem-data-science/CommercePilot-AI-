@@ -1,0 +1,105 @@
+{
+  "task_status": "prepared_for_review; blocked_fast_forward_and_pending_public_checks",
+  "main_commit": "ebe5e5d04d3313bfe424784568fb5e0731a69869",
+  "local_python": "3.11.14",
+  "local_health": "ok",
+  "local_mock_smoke": [
+    {
+      "scenario": "faq",
+      "passed": true,
+      "status": "ok",
+      "tools": [
+        "search_faq"
+      ]
+    },
+    {
+      "scenario": "order",
+      "passed": true,
+      "status": "ok",
+      "tools": [
+        "get_order_status"
+      ]
+    },
+    {
+      "scenario": "analytics",
+      "passed": true,
+      "status": "ok",
+      "tools": [
+        "sales_summary"
+      ]
+    },
+    {
+      "scenario": "refusal",
+      "passed": true,
+      "status": "refused",
+      "tools": [
+        "get_order_status"
+      ]
+    },
+    {
+      "scenario": "clarification",
+      "passed": true,
+      "status": "clarification",
+      "tools": []
+    }
+  ],
+  "quality_gates": {
+    "tests": {
+      "run": 146,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "unexpected_successes": 0,
+      "successful": true
+    },
+    "passed": true,
+    "gate_count": 9
+  },
+  "public": {
+    "url": "https://commercepilot-ai.streamlit.app/",
+    "reported_existing_deployment_branch": "feat/streamlit-interface",
+    "current_branch_verified": false,
+    "python_version_verified": false,
+    "public_paths_verified": false,
+    "observations": [
+      "HTTPS terminal: proxy CONNECT rejected with HTTP 403",
+      "Shared Chrome: DNS_PROBE_FINISHED_NO_INTERNET"
+    ],
+    "conclusion": "Verification blocked from this environment; not evidence of public app failure",
+    "owner_reported_initial_configuration": {
+      "repository": "Meryem-data-science/CommercePilot-AI-",
+      "branch": "feat/streamlit-interface",
+      "entrypoint": "app.py",
+      "python": "3.11",
+      "url": "https://commercepilot-ai.streamlit.app/"
+    }
+  },
+  "migration": {
+    "performed": false,
+    "strategy": "Future fast-forward of watched branch after reviewed ancestry integration and task-10 PR merge",
+    "blocked_now": "One deployed-only commit ee35bf9; strict fast-forward currently impossible",
+    "constraint": "No force push, deletion, recreation, URL change or deployed branch update now"
+  },
+  "git_sync": {
+    "deployed_commit": "ee35bf93ae997a52c9a5fd04692abe02fbdd0e77",
+    "main_commit": "ebe5e5d04d3313bfe424784568fb5e0731a69869",
+    "deployed_only_commits": 1,
+    "main_only_commits": 9,
+    "fast_forward_possible": false,
+    "production_asset_changes": [],
+    "deployed_only_commit_subjects": [
+      "Added Dev Container Folder"
+    ],
+    "merge_simulation": {
+      "conflicts": false,
+      "tree": "fad13d4fba85e8feeedca6449eae342e6e4fb189",
+      "performed_merge_commit": false
+    }
+  },
+  "publication": {
+    "performed": false,
+    "pr_draft": "docs/deployment_pr.md",
+    "requires_ancestry_review": true
+  }
+}

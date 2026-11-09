@@ -4,7 +4,7 @@
 
 Mini-projet académique — ENSA Fès, année universitaire 2026–2027.
 
-## Objectif et périmètre prévus
+## Objectif et périmètre
 
 CommercePilot AI vise une assistance e-commerce fondée sur trois outils de lecture :
 
@@ -12,11 +12,13 @@ CommercePilot AI vise une assistance e-commerce fondée sur trois outils de lect
 - `get_order_status(order_id, role, customer_id)` : statut des propres commandes du client ou de toute commande synthétique pour l'administrateur ; accès refusé à l'analyste ;
 - `sales_summary(period, role)` : ventes agrégées pour l'analyste et l'administrateur uniquement.
 
-Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter un remboursement. Les rôles de démonstration ne constituent pas une authentification réelle. Toutes les données futures seront fictives ; aucune donnée personnelle réelle n'est utilisée.
+Aucun rôle ne peut modifier les données, annuler une commande ou exécuter un remboursement. Les rôles de démonstration ne constituent pas une authentification réelle. Toutes les données sont fictives ; aucune donnée personnelle réelle n'est utilisée.
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Les trois outils ont été validés avec Groq lors de la tâche 4. La tâche 5 ajoute une interface Streamlit locale, avec mode mock autonome et mode Groq configurable. La CI GitHub Actions est proposée à la tâche 9 et reste à vérifier sur GitHub. Aucun déploiement automatique ni intégration MLflow n’est réalisé.
+Les tâches 1 à 9 sont intégrées dans `main` : cadrage, environnement, données AtlasShop et outils, orchestration sécurisée Groq, interface Streamlit, observabilité, évaluation systématique, qualité et CI GitHub Actions. La première exécution réelle de CI a réussi avec 143 tests et neuf gates ([run GitHub Actions](https://github.com/Meryem-data-science/CommercePilot-AI-/actions/runs/42714484210)). Les trois outils ont chacun un scénario Groq réel validé lors de la tâche 4.
+
+L'interface est déjà déployée sur [CommercePilot AI](https://commercepilot-ai.streamlit.app/) depuis `feat/streamlit-interface`, selon la configuration communiquée par la propriétaire. Les cinq parcours Mock y ont été précédemment validés. La tâche 10 prépare la consolidation sur `main` ; **le commit effectivement servi et les cinq parcours après synchronisation avec `main` restent à vérifier**. L'accès au site depuis Codex est actuellement bloqué par le réseau, ce qui ne prouve pas une panne du site. Aucun déploiement supplémentaire ni intégration MLflow n'est ajouté.
 
 ## Documentation
 
@@ -24,7 +26,7 @@ Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement 
 - [Architecture fonctionnelle prévisionnelle](docs/architecture.md)
 - [Rapport progressif et introduction académique](docs/rapport_progressif.md)
 
-## Architecture prévisionnelle
+## Architecture fonctionnelle
 
 L'interface Streamlit transmet une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci peut solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précèdent l'accès aux sources synthétiques ; les outils sensibles réappliquent les contrôles. La réponse reste fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
 
@@ -32,12 +34,12 @@ L'interface Streamlit transmet une question et un contexte de rôle simulé à u
 
 ```text
 CommercePilot-AI-/
-├── .github/workflows/  # Réservé à la CI/CD future ; aucun workflow actif
+├── .github/workflows/  # CI GitHub Actions active, sans déploiement automatique
 ├── src/
 │   └── tools/         # Trois outils métier en lecture seule
 ├── tests/             # Tests de données, outils et agent mock
 ├── data/              # Données AtlasShop et scripts de validation
-├── evaluation/        # Réservé aux évaluations futures
+├── evaluation/        # Corpus, résultats et rapports de monitoring/qualité
 ├── docs/              # Cadrage, architecture, rapport progressif
 ├── .python-version    # Version cible exacte : 3.11.14
 ├── requirements.txt   # SDK Groq et Streamlit
@@ -64,7 +66,7 @@ python3.11 -m venv .venv
 
 Le clonage ci-dessus est une instruction pour un nouveau poste ; il n'a pas été réexécuté dans le checkout cloud existant. Sous Windows, utiliser `.venv\Scripts\python.exe` à la place de `.venv/bin/python`.
 
-Dans le cloud actuel, Python par défaut est 3.12.14. La préparation suivante a été exécutée avec `uv`, déjà disponible, en conservant la vérification TLS :
+Historique de la préparation cloud à la tâche 2 : Python par défaut était 3.12.14. La préparation suivante a été exécutée avec `uv`, déjà disponible, en conservant la vérification TLS :
 
 ```bash
 UV_PYTHON_INSTALL_DIR=/workspace/.commercepilot-python UV_CACHE_DIR=/tmp/commercepilot-uv-cache uv python install 3.11.14
@@ -127,9 +129,9 @@ PIP_CACHE_DIR=/tmp/commercepilot-pip-cache .venv/bin/python -m pip install -r re
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Le mock est scripté et fonctionne sans clé ni réseau. Pour le mode réel, injecter `GROQ_API_KEY` de manière sécurisée et choisir un `GROQ_MODEL` compatible tool calling ; aucun modèle n'est codé en dur. Ne pas placer de secret dans les fichiers versionnés. La commande facultative `.venv/bin/python -m src.agent --mode groq --question 'Quels sont les délais de livraison ?'` n'a pas été exécutée avec l'API distante.
+Le mock est scripté et fonctionne sans clé ni réseau. Pour le mode réel, injecter `GROQ_API_KEY` de manière sécurisée et choisir un `GROQ_MODEL` compatible tool calling ; aucun modèle n'est codé en dur. Ne pas placer de secret dans les fichiers versionnés. Les essais Groq réels précédents sont décrits avec leurs succès et échecs dans le rapport progressif. Aucun appel réel supplémentaire n'est nécessaire à la vérification du déploiement Mock.
 
-`configs/agent.yaml` utilise la syntaxe JSON, sous-ensemble YAML : 3 itérations, 3 appels d'outils, timeout API de 10 secondes, sortie de 512 tokens, entrée de 1500 caractères et 4 questions d'historique. L’identifiant et la période doivent être explicites : deux dates ISO ou un mois français avec son année (par exemple septembre 2026). Le contexte de rôle reste simulé et le filtre lexical d'injection reste limité. En cas de `provider`, vérifier variables et modèle sans afficher la clé ; `timeout` et `quota` n'entraînent aucune relance automatique. La tâche 5 n'est pas commencée.
+`configs/agent.yaml` utilise la syntaxe JSON, sous-ensemble YAML : 3 itérations, 3 appels d'outils, timeout API de 10 secondes, sortie de 512 tokens, entrée de 1500 caractères et 4 questions d'historique. L’identifiant et la période doivent être explicites : deux dates ISO ou un mois français avec son année (par exemple septembre 2026). Le contexte de rôle reste simulé et le filtre lexical d'injection reste limité. En cas de `provider`, vérifier variables et modèle sans afficher la clé ; `timeout` et `quota` n'entraînent aucune relance automatique. Les étapes suivantes et leurs preuves sont documentées ci-dessous et dans le rapport progressif.
 
 
 ## Interface Streamlit — tâche 5
@@ -182,12 +184,12 @@ L'évaluation est exclusivement mock et génère sept traces anonymisées, `eval
 
 Cette commande exécute les tests sous garde réseau, mesure la couverture de `src/`, lance le validateur AtlasShop et Ruff, contrôle les seuils de la tâche 7, les métriques et la reproductibilité, recherche des secrets dans les fichiers versionnés/non ignorés et vérifie les diffs Git. Elle renvoie 0 si tous les gates passent, 1 sinon. Les résultats sont dans `evaluation/quality_results.json` et `evaluation/quality_report.md`, les preuves intermédiaires dans `work/quality/` (ignoré par Git).
 
-Les seuils sont figés dans `quality/baseline.json` : 45 scénarios, au moins 42 réussis, aucun recul d'un scénario précédemment réussi, 28/28 contrôles directs et aucune violation de permission. Les échecs connus EV-010, EV-016 et EV-022 restent documentés ; les résultats de la tâche 7 ne sont jamais réécrits automatiquement. Le lint ciblé et la couverture ne remplacent pas un audit de sécurité. Aucun workflow GitHub Actions n'est créé.
+Les seuils sont figés dans `quality/baseline.json` : 45 scénarios, au moins 42 réussis, aucun recul d'un scénario précédemment réussi, 28/28 contrôles directs et aucune violation de permission. Les échecs connus EV-010, EV-016 et EV-022 restent documentés ; les résultats de la tâche 7 ne sont jamais réécrits automatiquement. Le lint ciblé et la couverture ne remplacent pas un audit de sécurité. La tâche 8 n’ajoutait pas de workflow ; la CI a été ajoutée et vérifiée à la tâche 9.
 
 
 ## Intégration continue GitHub Actions — tâche 9
 
-Le workflow `.github/workflows/ci.yml` propose un job Ubuntu 24.04 / Python 3.11.14 : installation des deux fichiers de dépendances, puis **un seul appel à `python -m quality.check`**. Il réutilise les neuf gates de la tâche 8, sans reproduire leurs calculs dans le YAML. Les contrôles sont exécutés sur les Pull Requests ciblant `main`, les pushs sur `main`, et à la demande (`workflow_dispatch`). Les pushs sur une branche de travail seule ne déclenchent pas ce workflow.
+Le workflow opérationnel `.github/workflows/ci.yml` exécute un job Ubuntu 24.04 / Python 3.11.14 : installation des deux fichiers de dépendances, puis **un seul appel à `python -m quality.check`**. Il réutilise les neuf gates de la tâche 8, sans reproduire leurs calculs dans le YAML. Les contrôles sont exécutés sur les Pull Requests ciblant `main`, les pushs sur `main`, et à la demande (`workflow_dispatch`). Les pushs sur une branche de travail seule ne déclenchent pas ce workflow.
 
 Permissions limitées à `contents: read`, aucun `pull_request_target`, aucun secret transmis, variables Groq explicitement vides, jeton de checkout non persisté. Les actions officielles checkout v4.2.2, setup-python v5.6.0 et upload-artifact v4.6.2 sont épinglées par SHA. Leur correspondance aux tags officiels a été vérifiée. Les tests utilisent la garde réseau existante. Aucune étape n'appelle Groq ou ne déploie l'application.
 
@@ -197,10 +199,24 @@ Seuls `summary.json` et `summary.md`, projections sur liste blanche dans `work/c
 
 Le timeout du job est de 15 minutes. Le cache pip limite les téléchargements et les exécutions plus anciennes du même groupe sont annulées. Aucun service payant n'est ajouté ; les quotas et éventuels coûts GitHub dépendent du compte et de la visibilité du dépôt. Il n'y a pas de déclenchement planifié ni de déploiement continu : la partie implémentée est la CI, pas la CD.
 
-### Validation et première exécution distante
+### Validation locale et exécution GitHub confirmée
 
-Le YAML a été vérifié avec actionlint 1.7.7 et les commandes testées dans Codex, avec les variables Groq vides. Les preuves locales sont `evaluation/ci_local_results.json` et `evaluation/ci_local_summary.md` ; elles ne prouvent pas que GitHub Actions fonctionne sur les runners GitHub.
+Le YAML a été vérifié avec actionlint 1.7.7. La première [exécution réelle du workflow](https://github.com/Meryem-data-science/CommercePilot-AI-/actions/runs/42714484210), sur le commit `e0eb0d059d344ebf3c5bcd3f537fac82ca58648e`, s'est terminée avec succès : 143 tests, neuf gates, couverture combinée 92,73 %, 42/45 scénarios, 28/28 contrôles directs et zéro violation. Les fichiers `evaluation/ci_local_*` restent les preuves locales historiques ; ils ne sont pas présentés comme des logs distants.
 
-Après validation, publication de la branche et ouverture d'une PR vers `main`, consulter l'onglet **Checks** de la PR puis **Actions → CommercePilot quality**. Une approbation d'exécution peut être requise pour une contribution externe. Confirmer le SHA testé, le job vert, les neuf gates, les compteurs et les artefacts, puis conserver l'URL du run et ses captures. Ne déclarer la CI opérationnelle qu'après une exécution GitHub réussie. Le déclenchement manuel peut ne pas être proposé tant que le nouveau workflow n'existe pas sur la branche par défaut ; la PR sert donc à la première validation avant fusion.
-
+Pour les prochains changements, consulter Checks sur la PR puis Actions → CommercePilot quality, en vérifiant le SHA testé. Une CI verte ne déploie pas Streamlit et ne prouve pas que son application sert `main`.
 Captures utiles : déroulement du job, résumé des neuf gates, tests/couverture/évaluation et durée de rétention des artefacts. Aucune capture de réussite distante n'est fabriquée. Les protections de branche et l'obligation du check ne sont pas configurées automatiquement à cette étape.
+
+
+## Finalisation du déploiement existant — tâche 10, en cours
+
+Voir [la procédure de bascule et la recette](docs/deployment.md). Point d'entrée : `app.py` à la racine ; dépendances de production dans `requirements.txt` ; configuration visuelle existante dans `.streamlit/config.toml`. Python **3.11** doit être confirmé dans le runtime Community Cloud : `.python-version` documente la version de développement, sans changer automatiquement un runtime Streamlit existant.
+
+**Démonstration publique : Mock uniquement.** Ne configurer ni `GROQ_API_KEY` ni `GROQ_MODEL` sur l'application publique. Le code actuel propose Groq dès que ces deux variables existent, sans authentification ni quotas adaptés : ne pas les installer pour la recette. Les profils sélectionnables ne sont pas une protection d'accès à une API payante.
+
+```bash
+# Depuis la racine ; aucun appel réseau/API dans cette recette AppTest :
+.venv/bin/python -m deployment.check_local
+.venv/bin/python -m quality.check
+```
+
+Les cinq parcours sont vérifiés localement et le serveur répond à son contrôle de santé. Le bilan précis distingue local/public dans `deployment/verification.json`. L’application gardera sa branche source `feat/streamlit-interface`, son instance et son URL : seule une mise à jour Git sans force sera envisagée après revue/fusion. La vérification distante a toutefois révélé un commit propre `ee35bf9` (Dev Container) et neuf commits de retard : un fast-forward strict n’est pas possible tant que cette ascendance n’est pas intégrée à main par un merge revu. Une simulation de merge est sans conflit ; aucun merge réel ni push de la branche déployée n’a été effectué. La procédure détaille les préconditions, la publication proposée et la recette publique différée. Aucun test public du code synchronisé n’est revendiqué.
