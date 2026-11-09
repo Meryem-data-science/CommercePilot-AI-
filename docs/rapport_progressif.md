@@ -579,3 +579,78 @@ Une trace de succès, une de refus et une de panne fournisseur sont reproduites 
 La suppression des textes empêche de reconstruire une conversation à partir du journal ; cette perte de détail est volontaire. Les appels non retournés lors d'une exception inattendue ne sont pas connus : `result_available=false`, liste d'outils vide, et leur comptage n'est pas exhaustif. Les pannes de logging peuvent perdre une observation ; les métriques décrivent uniquement les traces collectées, sans garantir la complétude. Il n'y a pas encore de rotation, rétention automatique, alerting, corrélation distribuée ou stockage durable sur Streamlit Community Cloud. Le verrou protège les threads du processus, pas un déploiement multi-processus. L'horodatage et l'UUID doivent rester réservés à l'exploitation ; ne pas rendre les journaux publics, même si leur contenu métier a été supprimé. Les artefacts d'évaluation partagés ne contiennent que des événements synthétiques.
 
 Captures utiles au rapport : tableau agrégé de `monitoring_summary.md` avec le périmètre N=7 visible ; extrait des traces anonymisées succès/refus/erreur ci-dessus. Aucune capture n'a été fabriquée. Les captures doivent exclure les fichiers de configuration, secrets, prompts et réponses brutes. Le design Streamlit n'a pas été modifié. Aucun appel Groq réel, aucun commit ni push, tâche 7 non commencée.
+
+
+## Évaluation systématique de l'agent — tâche 7
+
+### Protocole et annotations
+
+La branche `feat/agent-evaluation` part de `origin/main` au commit `0b2d78e`, après fusion de la tâche 6. L'agent, les données, les outils, l'observabilité et le design Streamlit ne sont pas modifiés. Le fichier `evaluation/scenarios.json` définit **45 scénarios** versionnés, chacun avec identifiant, catégorie, question, rôle/contexte synthétique, statut attendu, liste ordonnée d'outils, références FAQ ou CSV, valeurs de référence explicites, type d'erreur attendu, justification, périmètre de permission, plan mock et panne éventuelle. Les attentes sont annotées avant lecture des sorties et ne sont pas recalées sur les échecs observés.
+
+Le jeu contient 10 FAQ, 6 suivis, 6 analyses commerciales, 6 cas de permissions, 5 clarifications, 3 demandes combinées, 4 instructions malveillantes et 5 situations d'erreur. Les questions comprennent des formulations canoniques, des paraphrases reconnues et des paraphrases volontairement exigeantes, dont certaines ne passent pas. Ce petit jeu synthétique manuel n'est ni un échantillon représentatif d'utilisateurs ni une mesure de performance générale.
+
+Trois niveaux sont distingués :
+
+1. **Validation déterministe directe** : 28 contrôles applicables appellent les outils sans LLM et comparent leurs résultats à des oracles CSV indépendants. Les références FAQ proviennent de faq.csv, la propriété/statut/dates des commandes de orders.csv, les agrégats d'une réimplémentation en Decimal des règles documentées, avec dates inclusives et référence fixe au 1er octobre 2026. Aucun chiffre n'est inventé. Les valeurs annotées sont vérifiées contre les fichiers à chaque lancement.
+2. **Orchestration simulée** : les 45 questions passent par `run_agent` avec `MockClient`, plans explicites et pannes injectées. Les outils effectivement exécutés sont observés. Les plans peuvent proposer un outil interdit ou des arguments malformés pour éprouver les validations locales. Ils ne prouvent jamais que Groq choisirait correctement un outil. Certaines requêtes FAQ sont normalisées par l'annotation ; une paraphrase conserve sa requête brute pour éprouver spécifiquement la recherche lexicale.
+3. **Compréhension LLM réelle** : non évaluée dans cette tâche. Un protocole futur devra fixer modèle/version, paramètres, budget et éventuelles répétitions, puis mesurer les sélections spontanées sans remplacer la sortie par les plans de ce jeu. Les métadonnées autorisées pourront être conservées sans secret ni raisonnement privé. Aucun appel API réel n'a été effectué ici.
+
+### Exécution et preuves reproductibles
+
+```bash
+.venv/bin/python -m evaluation.agent_evaluation
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python data/validate_data.py
+git diff --check
+```
+
+Le premier script produit `evaluation/agent_results.json` et `evaluation/agent_report.md`. Il accepte `--output-dir` pour préserver une exécution précédente. Les empreintes SHA-256 du jeu, de faq.csv, orders.csv et de la configuration bornent les entrées de l'évaluation. Les résultats ne contiennent pas de durées instables ; une double exécution sur les mêmes entrées est identique. Les connexions réseau sont bloquées et le sink d'observabilité est neutralisé dans ce contexte pour ne pas mélanger ce benchmark aux indicateurs opérationnels.
+
+Le rapport contient le tableau des **45 scénarios réussis ou échoués**, les sorties détaillées, les contrôles en échec et la performance par catégorie. Les identifiants et réponses présents dans ce corpus sont exclusivement les fixtures synthétiques AtlasShop déjà versionnées : il ne s'agit pas d'un export de conversations runtime. Une vérification des secrets réels configurés et des motifs de clés est effectuée avant livraison. Aucune donnée confidentielle ou raisonnement privé n'est ajouté.
+
+### Résultats réellement obtenus
+
+| Mesure | Numérateur / dénominateur | Résultat |
+| --- | --- | --- |
+| Scénarios entièrement réussis | 42/45 | 93,33 % |
+| Statut final exact | 42/45 | 93,33 % |
+| Outils exécutés exacts, liste ordonnée | 45/45 | 100 % |
+| Fidélité contrôlée des réponses métier | 23/24 | 95,83 % |
+| Occurrences de sources FAQ attendues retrouvées | 12/13 | 92,31 % |
+| Conformité des scénarios sensibles | 10/10 | 100 % |
+| Clarifications effectivement produites | 9/45 | 20 % |
+| Erreurs effectivement produites | 6/45 | 13,33 % |
+| Contrôles directs des outils contre les CSV | 28/28 | 100 % |
+
+**Aucune violation de permission détectée.** Les violations disposent d'une liste dédiée dans le JSON et le rapport et restent bloquantes indépendamment du score moyen. Les sondes observent les outils réellement exécutés, la propriété contrôlée par le suivi et l'absence de résultats protégés dans les sorties sensibles. Les refus ne comptent pas comme erreurs. Les six erreurs comprennent les pannes injectées et les arguments invalides attendus, dont un cas de permission : ce taux ne représente donc pas le taux de panne en production.
+
+Exactitude statut/outils = nombre de concordances / 45. Un scénario entier réussit seulement si tous les contrôles applicables concordent, y compris type d'erreur, sources, valeurs et permissions. La fidélité prend pour dénominateur les 24 scénarios attendus en succès métier, et compare objets aux oracles plus présence de fragments factuels dans le texte ; les refus/erreurs/clarifications attendus ne gonflent pas ce score. Deux réponses marquées à tort partielles peuvent avoir un contenu factuellement fidèle : le statut et la fidélité restent deux mesures distinctes. Cette vérification ne prouve pas une équivalence sémantique exhaustive.
+
+Couverture FAQ = occurrences de références attendues retrouvées / occurrences attendues ; une référence réutilisée dans deux scénarios compte deux fois. Conformité permissions = scénarios sensibles sans violation / 10 ; toute violation détectée ailleurs serait aussi listée séparément. Clarification/erreur = nombre de statuts effectivement obtenus de ce type / 45. La performance par catégorie est la proportion de scénarios entièrement réussis. Les métriques d'un ensemble vide retournent une valeur `null`, pas un succès artificiel.
+
+| Catégorie | Réussis / total |
+| --- | --- |
+| FAQ | 9/10 |
+| Suivi | 5/6 |
+| Analytics | 5/6 |
+| Permissions | 6/6 |
+| Clarifications | 5/5 |
+| Combinées | 3/3 |
+| Malveillantes | 4/4 |
+| Erreurs | 5/5 |
+
+### Échecs conservés et interprétation
+
+- **EV-010** : « Combien de temps prend la livraison ? ». Le plan propose `search_faq` avec cette même requête ; l'outil lexical retourne `not_found`, puis la complétude conduit à `clarification/incomplete_plan` sans citation attendue FAQ-002. Le contrôle direct de la FAQ canonique réussit. C'est une limite de recherche lexicale, pas une erreur de sélection Groq observée.
+- **EV-016** : « Pouvez-vous me dire où se trouve ma commande CMD-DEMO-001 ? ». Le suivi donne les valeurs exactes, mais cette paraphrase reste hors grammaire de complétude : réponse partielle avec clarification au lieu du succès attendu.
+- **EV-022** : « Fais-moi le bilan commercial de septembre 2026. ». Les agrégats sont exacts, mais la formulation reste hors grammaire de complétude et produit une clarification injustifiée.
+
+Les trois attentes restent `ok` ; l'agent n'est pas corrigé dans cette tâche et aucun échec n'est effacé des résultats. Le taux d'outils à 100 % repose sur des propositions simulées et ne mesure donc aucune compréhension spontanée du modèle.
+
+### Tests et limites
+
+**120 tests réussis** : 115 existants préservés et cinq nouveaux tests du protocole, de la structure des annotations, des références numériques, des dénominateurs, de la visibilité des violations et de la reproductibilité. Les tests de métriques injectent une violation artificielle pour vérifier qu'elle apparaît indépendamment des scores. Le validateur des données et `git diff --check` réussissent. Les tests techniques passent parce qu'ils vérifient la sincérité du protocole ; cela ne transforme pas les trois échecs métier en succès.
+
+Limites : corpus petit, annotations manuelles, plans imposés, pas de mesure de latence ou de qualité conversationnelle utilisateur et pas d'évaluation LLM réelle. Le calcul financier indépendant reste fondé sur les mêmes règles documentées et pourrait partager une erreur conceptuelle de définition. Les sondes de confidentialité vérifient les sorties structurées et certaines valeurs identifiantes/financières, sans prétendre détecter arbitrairement toute fuite sémantique. Les règles de sécurité et leurs limites lexicales restent celles de l'agent existant.
+
+Captures utiles au deuxième passage du rapport : tableau des métriques avec dénominateurs ; tableau des 45 verdicts ; détail des trois échecs ; liste explicite des violations vide ; extrait d'annotation et oracle CSV correspondant. Conserver les JSON et empreintes comme preuves techniques. Aucune capture n'est fabriquée. Aucun secret exposé, aucun changement de design, de données, d'observabilité ou de permission, aucun commit ni push ; tâche 8 non commencée.
