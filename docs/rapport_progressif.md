@@ -98,3 +98,26 @@ Le montant total commandé inclut les commandes annulées et retournées ; il re
 La génération et le validateur séparé ont été exécutés avec succès. Les vérifications portent sur les volumes, clés, quantités, prix, totaux, dates, statuts, retards, disponibilité et cohérence des deux représentations de la FAQ. La commande `python -m unittest discover -s tests -p test_data_validation.py -v`, exécutée avec l'interpréteur du virtualenv, a terminé trois méthodes de tests sans échec, y compris le contrôle de diversité des statuts par client et de l’âge des commandes en cours. Deux sorties indépendantes générées avec la même graine présentent les mêmes empreintes SHA-256 pour les six fichiers de données ; ces empreintes correspondent aussi à celles de la référence. Huit copies temporaires volontairement altérées ont été rejetées, notamment pour des clés étrangères invalides. La référence conservée n'a pas été modifiée par ces contrôles négatifs. Aucun test d'agent ou de contrôle d'accès applicatif n'est revendiqué.
 
 Le diagnostic initial a identifié un statut unique pour chacun des 30 clients et 100 commandes en cours âgées de plus de 30 jours. Le mélange des statuts, distinct de l'attribution des clients, corrige cette dépendance : les 30 clients possèdent désormais deux à quatre statuts. Les commandes en cours ont de 1 à 11 jours observés, dont 8 en retard. Les propriétaires et états des trois commandes de référence sont préservés. La nouvelle génération a été validée en sortie temporaire avant remplacement contrôlé de la référence, puis les contrôles ont été relancés. Les données présentent néanmoins des limites : quotas de statuts artificiels, dix commandes par client, catalogue figé, stock sans historique et absence d'événements datés de paiement ou de retour. Elles ne permettent ni estimation commerciale réelle ni reconstitution des états passés. Les règles, colonnes et empreintes sont détaillées dans `data_dictionary.md` et `data_generation.md`. Les preuves utiles au rapport sont un résumé terminal de validation et un extrait des relations entre tables ; aucune capture de conversation n'est nécessaire. Aucun outil de la tâche 3.B, appel Groq, interface ou pipeline n'est développé.
+
+
+## Architecture et implémentation des outils métier
+
+La tâche 3.B implémente trois fonctions autonomes en Python 3.11.14, sans dépendance tierce ni modèle externe. La recherche FAQ applique une normalisation lexicale et restitue une réponse sourcée avec un score de couverture. La consultation de commande vérifie le contexte simulé et limite la restitution au suivi nécessaire. La synthèse commerciale agrège les commandes selon une période ISO inclusive et les règles métier établies ; les montants sont calculés avec des décimaux exacts et sérialisés avec deux décimales. Les sources synthétiques sont conservées sans modification.
+
+| Opération | Client | Analyste | Administrateur |
+| --- | --- | --- | --- |
+| FAQ | Autorisée | Autorisée | Autorisée |
+| Suivi individuel | Ses commandes | Refusé | Autorisé |
+| Agrégats commerciaux | Refusé | Autorisés | Autorisés |
+
+Les outils valident les paramètres avant lecture et utilisent des chemins locaux fixes. Les formats CSV, montants, états et dates sont contrôlés ; les erreurs de lecture ou données invalides produisent un résultat générique sans détails internes. Les commandes inconnues et celles d'un autre client reçoivent le même refus externe. Aucune opération de mutation n'est disponible. La structure commune de retour distingue succès, entrée invalide, refus, absence de réponse FAQ et erreur de données.
+
+| Vérifications exécutées | Résultat |
+| --- | --- |
+| Quinze tests des outils : FAQ, permissions, erreurs, périodes, calculs | Réussis |
+| Trois tests existants des données : intégrité négative, reproductibilité et réalisme | Réussis |
+| Suite complète | 18 tests réussis, aucun échec |
+
+L'oracle monétaire repose sur six commandes contrôlées dont les attentes sont calculées indépendamment de l'outil : 242.61 MAD commandés, 121.41 MAD payés et 101.21 MAD réalisés. Sur les données de référence, l'exemple avril–septembre 2026 retourne 300 commandes et 46 retards ; la FAQ identifie FAQ-002 pour les délais de livraison et le suivi autorisé restitue la commande CMD-DEMO-001. La validation des données et les tests ont été réellement exécutés. Ces observations ne constituent pas une évaluation de l'agent complet.
+
+La recherche lexicale ne garantit pas la compréhension des paraphrases ou des négations ; son seuil heuristique n'est pas une probabilité de pertinence. Un texte malveillant reste une donnée, mais son filtrage sémantique n'est pas implémenté. Les paramètres de rôle et d'identité ne constituent pas une authentification : leur provenance fiable devra être garantie par l'application et l'orchestrateur futurs. Les contrats détaillés figurent dans `tools.md`. Les captures utiles sont la sortie synthétique des tests et les exemples structurés autorisés et refusés ; aucune image n'est fabriquée. L'orchestration, Groq, Streamlit et la CI/CD restent hors de cette tâche.

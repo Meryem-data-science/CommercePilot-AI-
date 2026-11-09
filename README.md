@@ -16,7 +16,7 @@ Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter u
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Aucun outil métier, orchestrateur, test d'agent, interface, pipeline CI/CD ou déploiement n'est réalisé. Groq, Streamlit et MLflow restent à intégrer ; GitHub Actions reste à configurer. Aucune commande de lancement d'application n'est disponible.
+Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. Aucun orchestrateur, test d'agent complet, interface, pipeline CI/CD ou déploiement n'est réalisé. Groq, Streamlit et MLflow restent à intégrer ; GitHub Actions reste à configurer. Aucune commande de lancement d'application n'est disponible.
 
 ## Documentation
 
@@ -102,4 +102,16 @@ AtlasShop contient 50 produits, 30 clients fictifs, 300 commandes, 600 lignes et
 .venv/bin/python -m unittest discover -s tests -p test_data_validation.py -v
 ```
 
-Le générateur refuse d'écraser les fichiers existants. La graine par défaut est `202627`, la période avril–septembre 2026 et la référence fixe le 1er octobre 2026. Voir le [dictionnaire et les KPI](docs/data_dictionary.md) et la [méthode et les validations](docs/data_generation.md). Ces contrôles portent sur les données, sans tester un agent. La tâche 3.B n'est pas engagée.
+Le générateur refuse d'écraser les fichiers existants. La graine par défaut est `202627`, la période avril–septembre 2026 et la référence fixe le 1er octobre 2026. Voir le [dictionnaire et les KPI](docs/data_dictionary.md) et la [méthode et les validations](docs/data_generation.md). Ces contrôles portent sur les données, sans tester un agent. La tâche 3.B fournit les outils locaux ; la tâche 4 n'est pas engagée.
+
+
+## Outils métier — tâche 3.B
+
+Les contrats, permissions, limites et exemples vérifiés sont décrits dans [docs/tools.md](docs/tools.md). Aucun LLM ni réseau n'est nécessaire. Depuis la racine :
+
+```bash
+.venv/bin/python -m unittest discover -s tests -p test_tools.py -v
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+Le contexte de rôle est simulé et ne constitue pas une authentification réelle.
