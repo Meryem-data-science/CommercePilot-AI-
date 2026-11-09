@@ -24,7 +24,7 @@ Les fichiers nécessaires sont présents sur le commit `ebe5e5d04d3313bfe4247845
 
 La solution retenue conserve la branche surveillée `feat/streamlit-interface` et l'URL existante. Elle consiste à avancer cette branche jusqu'au commit validé de `main`, après revue/fusion de la PR de tâche 10. Il ne s'agit ni de modifier le tableau de bord ni de créer une nouvelle application. Streamlit peut rafraîchir ou redémarrer le processus en détectant le nouveau commit ; on ne peut pas garantir la conservation des sessions, même si l'instance et l'URL restent les mêmes.
 
-### État réellement observé avant toute écriture distante
+### État initial observé avant intégration (preuve historique)
 
 - `origin/feat/streamlit-interface` : `ee35bf93ae997a52c9a5fd04692abe02fbdd0e77`.
 - `origin/main` : `ebe5e5d04d3313bfe424784568fb5e0731a69869`.
@@ -35,16 +35,21 @@ La solution retenue conserve la branche surveillée `feat/streamlit-interface` e
 - `git merge-tree --write-tree origin/main origin/feat/streamlit-interface` réussit sans conflit, arbre simulé `fad13d4fba85e8feeedca6449eae342e6e4fb189`. Aucun commit de merge, aucune référence locale de travail ni branche distante n'ont été modifiés par cette simulation.
 - Aucune différence sur app.py, src/presentation.py, .streamlit/, requirements.txt ou data/ : design, dépendances de production et données sont identiques.
 
-Le fichier Dev Container n'a pas été exécuté. Il contient notamment des options Codespaces désactivant CORS/XSRF ; elles ne sont pas celles de l'application Community Cloud, mais cet ajout doit être examiné avant intégration. Aucune décision de conservation ou modification n'est prise automatiquement.
+Le fichier Dev Container n’a jamais été exécuté. Après autorisation explicite, son historique a été intégré puis le fichier a été retiré de l’arbre final, car il n’est pas nécessaire à Community Cloud et ses options Codespaces désactivaient CORS/XSRF. Les réglages et le code de l’application déployée n’ont pas été modifiés.
 
-### Ordre de publication et de revue proposé
+### Intégration autorisée réalisée dans la branche de PR
 
-1. Examiner les documents et tests de `feat/deployment-finalization`, puis autoriser leur commit/push et la création d'une PR vers `main`. Aucune publication n'est effectuée par cette préparation.
-2. Pour permettre ensuite un fast-forward strict, **l'ascendance de `ee35bf9` doit entrer dans `main`** après revue de son fichier Dev Container. Deux possibilités : l'intégrer par un vrai merge dans la branche de tâche 10 avant publication de sa PR, ou examiner une PR séparée intégrant la branche existante vers main. Ne pas modifier la branche déployée pour cela.
-3. Cette intégration doit préserver les parents Git : utiliser un **merge commit**, pas un squash ou un cherry-pick. Copier le fichier ou reproduire son contenu ne suffit pas à rendre `ee35bf9` ancêtre de main. Si la PR de tâche 10 contient cette intégration, sa fusion vers main doit elle aussi préserver l'ascendance. Si l'ajout est refusé, arrêter et décider d'une autre stratégie ; aucun force push n'est proposé.
-4. Une PR ne contenant que la documentation et les tests de tâche 10 ne résout pas cette divergence : le blocage serait encore présent après sa fusion. La description préparée de PR signale cette condition explicitement.
-5. Après autorisation et fusion, refaire les contrôles d'ascendance sur les références distantes fraîches. Ils doivent donner zéro commit propre sur la branche déployée. Si la branche a reçu un nouveau commit entre-temps, arrêter et réexaminer la divergence.
-6. Seulement après ces validations et une autorisation de synchronisation, pousser le SHA exact de main vers la branche surveillée sans force. Cette dernière étape est volontairement différée.
+Les modifications locales de tâche 10 ont d'abord été préservées par le commit `468c430`. Un **vrai merge Git** a ensuite été créé : `ba39cdb4ff58f2c491d65fcf0b22c9b12a6d868f`, avec deux parents `468c43004d4eb1be1495c4a96b124630110b9145` et `ee35bf93ae997a52c9a5fd04692abe02fbdd0e77`. Le commit d'origine est donc conservé dans l'ascendance. Le fichier `.devcontainer/devcontainer.json` a ensuite été supprimé de l'arbre de travail et cette suppression fait partie de la publication finale autorisée. Aucune instruction du fichier n'a été exécutée.
+
+La branche de PR contient les changements de main et ceux de la tâche 10. La commande `git merge-base --is-ancestor ee35bf93ae997a52c9a5fd04692abe02fbdd0e77 HEAD` réussit. La branche distante déployée reste inchangée à `ee35bf9`.
+
+### Fusion de PR et synchronisation ultérieure
+
+1. Examiner la PR de `feat/deployment-finalization` vers `main`, y compris la conservation d'historique et le retrait du fichier Dev Container.
+2. **Utiliser impérativement « Create a merge commit ». Ne pas utiliser « Squash and merge » ni « Rebase and merge ».** Sinon, la présence des fichiers ne suffit pas à préserver l'ascendance de `ee35bf9` dans main et le fast-forward futur pourrait rester impossible.
+3. Aucune fusion automatique n'est autorisée. Après validation et fusion manuelle, refaire le fetch et contrôler l'ascendance sur les références distantes fraîches. Il doit y avoir zéro commit propre sur la branche déployée ; si elle a avancé entre-temps, arrêter et réexaminer la divergence.
+4. Après un accord distinct de synchronisation, pousser le SHA exact de main vers `feat/streamlit-interface` sans force, puis vérifier l'égalité des SHA distants. **Cette synchronisation n'est pas effectuée par la publication de la PR.**
+5. Attendre que l'application existante charge le nouveau commit, sans changement d'URL ni de coordonnées, puis exécuter les cinq parcours publics ci-dessous. Ne pas confondre ascendance Git correcte, succès de CI et recette du site public.
 
 Commandes prévues pour l'étape future, **non exécutées maintenant** :
 
@@ -117,4 +122,4 @@ Vérifier aussi le rechargement de page et une nouvelle session : aucune convers
 
 L'URL a été fournie, mais la connexion terminal est rejetée par le proxy (CONNECT HTTP 403) et Chrome partagé termine par `DNS_PROBE_FINISHED_NO_INTERNET`. Aucun des cinq parcours publics n'a donc été rejoué par l'assistant et aucune bascule n'est revendiquée. Ce sont des blocages de l'environnement de vérification, pas une preuve que le site est en panne. La propriétaire a confirmé la configuration initiale : branche feat/streamlit-interface, app.py, Python 3.11, même URL. Cette déclaration ne confirme pas une bascule ultérieure vers main ni une lecture actuelle des logs ; ces preuves restent attendues.
 
-Critères de clôture : instance et URL conservées, commit de la branche déployée identique au main approuvé, Python 3.11, Mock seul, disponibilité et cinq parcours publics effectivement vérifiés. Le fast-forward est actuellement bloqué par le commit propre décrit ci-dessus. Aucun commit, push, redémarrage public, nouvelle application ou modification de secrets n'a été effectué par l'assistant. Tâche 11 non commencée.
+Critères de clôture : instance et URL conservées, commit de la branche déployée identique au main approuvé, Python 3.11, Mock seul, disponibilité et cinq parcours publics effectivement vérifiés. Le fast-forward vers le main actuel reste impossible avant la fusion de la PR ; l’ascendance requise est désormais préparée dans la branche de PR. Des commits et la publication de cette seule branche sont autorisés. Aucun push de la branche déployée, redémarrage public, nouvelle application ou modification de secrets n’est effectué. Tâche 11 non commencée.

@@ -1,5 +1,5 @@
 {
-  "task_status": "prepared_for_review; blocked_fast_forward_and_pending_public_checks",
+  "task_status": "history_integrated; pending_PR_review_merge_and_public_verification",
   "main_commit": "ebe5e5d04d3313bfe424784568fb5e0731a69869",
   "local_python": "3.11.14",
   "local_health": "ok",
@@ -78,7 +78,7 @@
   "migration": {
     "performed": false,
     "strategy": "Future fast-forward of watched branch after reviewed ancestry integration and task-10 PR merge",
-    "blocked_now": "One deployed-only commit ee35bf9; strict fast-forward currently impossible",
+    "blocked_now": "Current main lacks original ancestry until PR merge; ancestry preserved in prepared branch",
     "constraint": "No force push, deletion, recreation, URL change or deployed branch update now"
   },
   "git_sync": {
@@ -98,8 +98,18 @@
     }
   },
   "publication": {
-    "performed": false,
-    "pr_draft": "docs/deployment_pr.md",
-    "requires_ancestry_review": true
+    "authorized": true,
+    "pr_description": "docs/deployment_pr.md",
+    "automatic_merge": false
+  },
+  "history_integration": {
+    "original_commit": "ee35bf93ae997a52c9a5fd04692abe02fbdd0e77",
+    "preservation_commit": "468c43004d4eb1be1495c4a96b124630110b9145",
+    "merge_commit": "ba39cdb4ff58f2c491d65fcf0b22c9b12a6d868f",
+    "original_is_ancestor": true,
+    "main_is_ancestor": true,
+    "devcontainer_in_final_tree": false,
+    "deployed_branch_updated": false,
+    "required_PR_merge_method": "Create a merge commit"
   }
 }
