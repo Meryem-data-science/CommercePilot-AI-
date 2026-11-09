@@ -1,0 +1,2 @@
+# Tâche 2 : aucune dépendance tierce nécessaire.
+# Ajouter et fixer les versions de Streamlit, Groq et MLflow aux étapes concernées.

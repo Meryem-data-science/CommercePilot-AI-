@@ -1,0 +1,38 @@
+# Environnements et caches Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# Configuration privée et secrets
+.env
+.env.*
+!.env.example
+secrets/
+.secret*
+.streamlit/secrets.toml
+*.pem
+*.key
+*.p12
+*.pfx
+# Logs et fichiers temporaires
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*~
+.DS_Store
+# Sorties de construction et suivi expérimental local
+build/
+dist/
+*.egg-info/
+mlruns/
+mlartifacts/
