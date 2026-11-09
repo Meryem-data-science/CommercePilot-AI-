@@ -142,6 +142,301 @@ La configuration prévoit trois itérations, trois appels d'outils, dix secondes
 
 Le mode mock utilise des plans déterministes et ne requiert aucune clé ni facturation. Les scénarios couvrent FAQ, propriété des commandes, analytics, multi-outils, ambiguïtés, injections et pannes simulées. Le SDK officiel est également exercé avec un transport HTTP simulé, notamment pour les erreurs 429 et 500. La commande de démonstration mock a retourné une réponse française sourcée FAQ-002. Cinq tests ciblés supplémentaires vérifient le rendu sans altération des résultats, les valeurs absentes, les mois explicites, les années bissextiles et la clarification des périodes ambiguës ou contradictoires. L'installation des dépendances, le validateur et `pip check` ont réussi.
 
-Le modèle distant reste configurable par `GROQ_MODEL` ; aucun identifiant de modèle n'est imposé. La clé et le modèle n'étant pas disponibles dans l'environnement, aucun appel Groq réel n'a été lancé. L'accès à la page web de documentation a renvoyé HTTP 403 ; les contrats ont été consultés dans les sources officielles du SDK. Ces résultats valident le fonctionnement local simulé, sans établir la qualité du routage réel ni une sécurité de production. Le filtre lexical peut produire des faux positifs et manquer des formulations inédites.
+Le modèle distant reste configurable par `GROQ_MODEL` ; aucun identifiant de modèle n'est imposé. Lors de cette validation initiale, la clé et le modèle n'étaient pas disponibles et aucun appel Groq réel n'avait été lancé. Les vérifications distantes ultérieures sont distinguées ci-dessous. L'accès à la page web de documentation a renvoyé HTTP 403 ; les contrats ont été consultés dans les sources officielles du SDK. Ces résultats valident le fonctionnement local simulé, sans établir la qualité du routage réel ni une sécurité de production. Le filtre lexical peut produire des faux positifs et manquer des formulations inédites.
 
 Le diagramme de séquence et les contrats détaillés figurent dans `agent.md`. Les figures utiles sont ce diagramme, la sortie synthétique des 48 tests et l'exemple CLI mock, sans clé ni capture de conversation. Aucune image n'est fabriquée. L'interface, l'observabilité complète, la CI/CD et le déploiement restent hors périmètre.
+
+
+### Correction de la sélection d'outils et essais Groq réels — 9 novembre 2026
+
+Le premier essai réel sur `main` (`e6f473ede97d4dbf6f1a2e596f70dd51925c92cb`) a techniquement abouti mais retourné `clarification` sans outil pour la question « Quels sont les délais de livraison ? ». Le code utilisait toujours `tool_choice=auto`, des descriptions limitées aux noms des outils et une conversion systématique de l'absence d'appel en clarification. La fin de génération de ce premier essai n'est pas connue ; ces facteurs constituent un diagnostic de conception, sans preuve d'une cause unique côté modèle.
+
+Sur la branche locale `fix/groq-tool-selection`, les descriptions et le prompt sont précisés. Une reconnaissance déterministe conservatrice établit si une demande est complète et autorisée avant d'utiliser `required` au premier tour. Elle ne choisit ni la fonction ni les arguments à la place du modèle. Les autres demandes et la clôture restent en `auto`. Les schémas proposés sont filtrés par rôle ; les permissions, la propriété, les arguments stricts, les limites et les interdictions restent vérifiés. Les appels parallèles sont désactivés pour permettre la planification séquentielle. Une absence d'appel malgré une demande complète est distinguée d'une ambiguïté, et les sorties tronquées sont rejetées. Seules des métadonnées de fin sur liste blanche sont conservées, sans contenu privé de raisonnement.
+
+Les **59 tests hors ligne réussissent** : 48 tests existants et 11 nouveaux tests ciblés, dont des échanges du SDK sur transport HTTP simulé. Le validateur des données et `git diff --check` réussissent. Python 3.11.14 et Groq SDK 1.7.0 ont été utilisés. Les données restent inchangées.
+
+Le nouvel essai réel a été exécuté une seule fois après ces contrôles, avec les variables Groq présentes sans exposition de leurs valeurs. Deux réponses API ont été observées : sélection en `required`, fin `tool_calls`, puis clôture en `auto`, fin `length`. `search_faq` a réellement été exécuté, mais la limite de sortie au second tour conduit au statut final `error`, de type `provider`, avec « Le fournisseur est indisponible ou non configuré. ». Selon la politique existante, sources et résultats sont masqués en erreur. Ce message générique n'indique pas ici une absence de configuration : la métadonnée observée est une limite de génération.
+
+La réponse attendue hors ligne pour AtlasShop est « La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie. », référence `FAQ-002`. Elle n'a pas été restituée dans ce nouvel essai réel. La sélection d'outil est corrigée pour cet essai, mais le succès de bout en bout reste non établi en raison de la clôture tronquée. Aucun nouvel appel, aucune métrique de qualité ni analyse du raisonnement privé ne sont revendiqués. Les détails et limites du reconnaisseur lexical figurent dans `agent.md`. Aucun commit ni push ; la tâche 5 n'est pas commencée.
+
+
+### Clôture déterministe et troisième essai réel — 9 novembre 2026
+
+Le défaut de clôture du deuxième essai était lié à un appel Groq supplémentaire obligatoire dans l'ancienne boucle, même après succès de la FAQ. Le rendu métier était déjà disponible, mais n'était déclenché qu'après réception d'un tour sans outil. Le second appel atteignait la limite de génération (`length`) et son rejet produisait une erreur masquant les résultats. La part du raisonnement interne dans cet épuisement n'a pas été mesurée ; aucun raisonnement privé n'a été enregistré ou analysé.
+
+La correction ajoute une preuve de couverture conservatrice pour les formulations simples entièrement reconnues. Après succès d'un lot complet satisfaisant un seul besoin, l'agent appelle directement `render_results`, sans demander au modèle de terminer. Les données métier sont l'unique source de la réponse. Les demandes multi-outils gardent une planification séquentielle ; un besoin restant ne peut être présenté comme satisfait. Les demandes non entièrement reconnues sont signalées comme partielles si des résultats sont disponibles. Refus, erreurs et sorties tronquées ne sont jamais convertis en succès. Les permissions et outils métier restent inchangés.
+
+Le budget reste fixé à 512 tokens de génération, sans hausse. `reasoning_effort=low` est transmis seulement aux modèles GPT-OSS explicitement reconnus par l'adaptateur ; les autres modèles ne reçoivent pas cette option. Les plafonds d'itérations et d'appels, le timeout et l'absence de relance SDK sont conservés. Le réglage vise une réduction du raisonnement généré sans économie de tokens revendiquée.
+
+La suite complète comporte **70 tests réussis** : les 59 tests précédents adaptés aux nouvelles conditions de terminaison et 11 tests complémentaires. Ils couvrent les trois besoins simples, les demandes combinées, les besoins manquants ou ambigus, refus et pannes, couverture du thème FAQ, budget et réponses API tronquées sur transport simulé. Le validateur des données et `git diff --check` réussissent. Les données AtlasShop et les trois outils métier sont inchangés.
+
+Une seule nouvelle interaction réelle a ensuite été exécutée sur la branche locale `fix/groq-tool-selection`, avec Python 3.11.14 et la CLI Groq. Résultat : **`status=ok`**, `tools_called=['search_faq']`, `sources=['FAQ-002']`, `error_type=null`. Une seule réponse API a été observée, avec `tool_choice=required` et `finish_reason=tool_calls`. La clôture a été réalisée localement sans deuxième requête.
+
+Réponse réellement restituée : « La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie. (Source : FAQ-002.) » La référence est la FAQ AtlasShop version 1.0. Pour cette question, le nombre de réponses API observées est passé de deux à une entre les deux essais distincts ; aucun coût, temps ou volume de tokens n'est inventé. La généralisation à d'autres formulations et modèles reste à évaluer. Aucun nouvel essai automatique, commit ou push ; la tâche 5 n'est pas commencée. Les détails de la grammaire et des limites sont documentés dans `agent.md`.
+
+
+### Vérification réelle complémentaire du suivi — 9 novembre 2026
+
+Sur la branche locale `fix/groq-tool-selection`, les changements existants ont été préservés. Une seule interaction a été exécutée avec le véritable `GroqClient` via `run_agent`, pour « Où est ma commande CMD-DEMO-001 ? », contexte de démonstration `role=client`, `customer_id=CLI-001`. La configuration sécurisée existante a été utilisée sans affichage ni stockage de ses valeurs.
+
+| Observation | Résultat réel |
+| --- | --- |
+| Statut final | `clarification` |
+| Outil exécuté | `get_order_status` |
+| Résultat de l'outil | `ok` |
+| Appartenance | Commande appartenant à `CLI-001`, vérifiée dans les données locales |
+| Statut et dates | Livrée ; date prévue et date effective : 2026-07-22 |
+| Comparaison déterministe | Résultat de l'agent exactement égal à celui de `get_order_status` pour ce contexte |
+| Réponses API observées | 2 : `auto/tool_calls`, puis `auto/stop` |
+| Erreur de l'agent | `incomplete_plan` ; aucune erreur fournisseur signalée |
+
+Réponse réellement produite :
+
+> Résultats partiels ; la couverture complète de la demande reste à confirmer.
+> Commande CMD-DEMO-001 : livrée. Date de livraison prévue : 2026-07-22. Livraison effectuée le 2026-07-22.
+
+Le contenu métier du suivi est exact et compréhensible en français, mais le scénario n'est pas validé de bout en bout : le statut final reste une clarification injustifiée. Le contrôle `completion_needs` reconnaît notamment « Suivi CMD-DEMO-001 » et « Statut CMD-DEMO-001 », mais pas la formulation complète « Où est ma commande CMD-DEMO-001 ? ». La demande n'est donc pas reconnue comme entièrement couverte ; après l'appel de fin, le mécanisme conservateur présente les résultats comme partiels. Cette limite de reconnaissance explique le résultat observé sans défaut de permission ni de données. Aucune correction n'a été apportée dans cette vérification.
+
+Conformément à l'arrêt demandé dès détection d'un défaut, le test « Résume les ventes de septembre 2026. », prévu avec `role=analyste` sans identité client, **n'a pas été exécuté**. Il n'existe donc pour cet essai ni statut, ni outil exécuté, ni réponse, ni erreur API observée ; zéro requête a été lancée pour les ventes. La période, les agrégats et l'absence de transmission de détails individuels ne sont pas revendiqués comme vérifiés par un nouvel essai réel.
+
+Rappel historique sans nouvel appel : le dernier test FAQ validé avait retourné `ok`, exécuté `search_faq`, cité `FAQ-002` et utilisé une seule requête API. Sa réponse était « La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie. (Source : FAQ-002.) ».
+
+Seule cette section de tâche 4 du rapport a été actualisée lors de la présente vérification. Les 70 tests automatiques étaient réussis lors de la validation précédente ; ils n'ont pas été relancés pour cette modification documentaire. Aucune donnée ni règle de sécurité modifiée, aucune répétition de l'interaction, aucun commit ni push. La tâche 5 n'est pas commencée.
+
+
+### Reconnaissance des formulations de suivi et validation réelle finale — 9 novembre 2026
+
+Le contrôle de complétude ne reconnaissait auparavant que des formulations étroites telles que « Suivi CMD-DEMO-001 ». La formulation « Où est ma commande CMD-DEMO-001 ? » donnait donc `completion_needs=None` malgré un résultat métier exact, et le tour de fin la présentait comme partielle (`clarification/incomplete_plan`). Le filtre préalable de sélection normalisait aussi « où » en « ou », puis pouvait le confondre avec une alternative. Ce défaut concernait la reconnaissance, pas les permissions ni les données.
+
+La correction reste dans les fonctions de reconnaissance de `src/agent.py` : normalisation commune des accents, casse, espaces et ponctuation, avec conservation des identifiants et des séparateurs de clauses ; reconnaissance ancrée de chaque clause de consultation par `order_intent`. Les formulations suivantes sont reconnues : « Où est ma commande CMD-DEMO-001 ? », « Quel est le statut de CMD-DEMO-001 ? », « Suivi CMD-DEMO-001 », « Où en est ma commande CMD-DEMO-001 ? » et « Ma commande CMD-DEMO-001 a-t-elle été livrée ? ». Une simple mention d'identifiant ne suffit pas. Les besoins reconnus et leurs permissions sont consultés avant le filtre conservateur d'incertitude, ce qui distingue l'interrogatif « où » d'une alternative.
+
+La séparation des clauses accepte aussi « ? Et … » sans perdre le second besoin. Une demande suivi + FAQ doit toujours satisfaire les deux besoins ; un besoin manquant conserve une clarification. Pour préparer la question exacte de validation commerciale sans reproduire le défaut de grammaire, le préfixe « Résume les ventes de … » est également reconnu lorsque la période est complète. Le moteur de rendu, les conditions de clôture, le client Groq, les limites et les outils métier n'ont pas été modifiés dans cette correction. Les mutations restent refusées avant tout appel ; la propriété, les permissions et l'interdiction des arguments de rôle ou d'identité restent contrôlées.
+
+**Validation hors ligne : 77 tests réussis**, incluant les 70 précédents et 7 nouveaux tests paramétrés. Ils vérifient les variantes de formulation et de normalisation, les commandes autorisées et interdites, l'identifiant absent, les mentions ambiguës, le suivi combiné à la FAQ, les besoins insatisfaits, les mutations/remboursements, les arguments de contexte injectés, les permissions d'analyste et la formulation exacte des ventes. Le validateur des données et `git diff --check` réussissent. Aucune donnée AtlasShop ni aucun des trois outils métier n'a été modifié.
+
+#### Essai réel de suivi
+
+Une seule interaction `run_agent` avec le véritable `GroqClient` a été exécutée pour « Où est ma commande CMD-DEMO-001 ? », contexte `role=client`, `customer_id=CLI-001`.
+
+- Statut final : **`ok`** ; outil exécuté : **`get_order_status`** ; erreur : **`null`**.
+- Résultat exactement égal à celui de l'outil déterministe sous ce contexte, qui valide la propriété de la commande.
+- Une seule réponse API observée : `required/tool_calls`. Aucun appel de clôture.
+- Réponse réelle : « Commande CMD-DEMO-001 : livrée. Date de livraison prévue : 2026-07-22. Livraison effectuée le 2026-07-22. »
+
+Le nombre de réponses API pour cette même formulation est passé de deux dans l'essai précédent à une dans ce nouvel essai, et le statut est passé de clarification à succès. Aucune mesure de coût, latence ou consommation de tokens n'est revendiquée.
+
+#### Essai réel d'analyse des ventes
+
+Après succès du suivi uniquement, une seule interaction a été exécutée pour « Résume les ventes de septembre 2026. », contexte `role=analyste`, sans `customer_id`.
+
+- Statut final : **`ok`** ; outil exécuté : **`sales_summary`** ; erreur : **`null`**.
+- Période normalisée : **2026-09-01 au 2026-09-30 inclus**.
+- Tous les résultats sont exactement égaux à `sales_summary` exécuté localement pour cette période et ce rôle ; le rendu correspond exactement à `render_results`.
+- Une seule réponse API observée : `required/tool_calls`. Aucun appel de clôture.
+- Les schémas proposés excluent le suivi individuel pour ce rôle. Le contrôle des messages sortants n'a détecté aucun identifiant de client ou de commande ni champ `customer_id`/`order_id` ; aucun résultat métier individuel n'a été envoyé. Seuls des booléens de vérification ont été imprimés, sans contenu de raisonnement privé.
+
+Réponse réelle : « Synthèse du 2026-09-01 au 2026-09-30 inclus (états au 2026-10-01) : 87 commande(s). Montant total commandé : 109544,30 MAD. Montant des commandes payées : 66261,30 MAD. Chiffre d’affaires réalisé : 29157,20 MAD. Annulations : 2 (2082,30 MAD). Retours : 1 (2252,50 MAD). Retards : 12, dont 4 livraisons initiales tardives et 8 commandes en cours. »
+
+La FAQ déjà validée n'a pas été relancée : son dernier résultat reste `ok`, `search_faq`, source `FAQ-002`, une requête API. Les trois outils ont ainsi chacun un scénario réel validé, sans prétendre à une évaluation exhaustive des paraphrases, des modèles ou de la sécurité de production. La reconnaissance reste conservatrice sur les formulations non prévues. Les deux nouvelles interactions n'ont été exécutées qu'une fois chacune, sans répétition ni erreur fournisseur. La branche locale `fix/groq-tool-selection` et les changements antérieurs sont préservés. Aucune valeur secrète affichée ou enregistrée, aucun commit ni push ; tâche 5 non commencée.
+
+
+### Amélioration rédactionnelle des réponses — tâche 4
+
+Le rendu français final a été amélioré sans nouvelle génération Groq. Les réponses de suivi utilisent des phrases fluides, des dates françaises et une distinction explicite entre date prévue et livraison effective. La mention « à la date prévue » est dérivée uniquement de l'égalité des deux dates. La FAQ conserve son texte exact et ses réserves, avec une référence documentaire sur une ligne lisible. Le bilan commercial distingue les montants commandés, payés et réalisés, puis les annulations, retours et retards ; la période et la date de référence sont présentées en français. Les montants sont groupés par milliers avec virgule décimale et deux décimales exactes, sans conversion en flottant.
+
+Les réponses multi-outils sont séparées par sujet et conservent leurs sources. Les précisions demandées sont adaptées au numéro de commande ou à la période. Les messages de refus restent neutres : une commande inconnue et une commande inaccessible produisent la même réponse, sans fuite de données. Les résultats partiels restent signalés et les erreurs ou refus ne deviennent jamais des succès. Les résultats JSON métier, permissions, données et outils restent inchangés ; seul le texte destiné à l'utilisateur est reformulé.
+
+La suite complète compte **89 tests réussis** : 77 tests précédents maintenus avec adaptation des seules attentes de présentation, plus 12 tests ciblés. Ils couvrent formats français, précision des montants, dates absentes et différentes, conservation des résultats, réponses combinées, refus, clarifications et erreurs sûres. Le validateur de données et `git diff --check` réussissent. Aucun nouvel appel réel Groq n'a été lancé pour ce changement purement rédactionnel ; aucune nouvelle métrique API n'est revendiquée.
+
+Exemples hors ligne : le suivi de CMD-DEMO-001 devient « Votre commande CMD-DEMO-001 est livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue. ». Le bilan de septembre 2026 présente 87 commandes et distingue 109 544,30 MAD commandés, 66 261,30 MAD payés et 29 157,20 MAD réalisés. La FAQ conserve la réserve « il ne s’agit pas d’une garantie » et cite « Référence : FAQ AtlasShop, FAQ-002. ». Ces exemples sont issus des données déterministes, sans nouvel essai distant.
+
+La personnalisation reste limitée aux gabarits et aux informations disponibles, sans promesse ni valeur inventée. Les mécanismes d'identité restent simulés et la reconnaissance des formulations conserve ses limites déjà documentées. Les changements antérieurs sont préservés sur `fix/groq-tool-selection`. Aucun commit ni push ; la tâche 5 n'est pas commencée.
+
+
+### Derniers ajustements et réévaluation des dix scénarios — tâche 4
+
+Le défaut de complétude de « Quel est le délai de retour ? » est corrigé par une reconnaissance documentaire bornée, associée aux références FAQ existantes. La clôture exige maintenant un résultat `ok` portant la référence attendue, et non seulement la présence d'un mot dans la requête. Des paraphrases sur les conditions de retour et de livraison ainsi que les remboursements informatifs sont couvertes. L'exception au filtre lexical pour le nom « remboursement » est limitée aux questions reconnues FAQ-020/021 ; les mutations, remboursements exécutoires et injections restent refusés. Les clauses supplémentaires et les besoins multiples restent contrôlés.
+
+Les bilans vides sont raccourcis sans supprimer les détails du JSON. Les titres combinés décrivent le sujet précis ; le chiffre d'affaires réalisé est explicitement défini comme celui des commandes livrées et payées. Le suivi affiche la référence historique de démonstration. Le lot mixte FAQ + ventes interdites au client reste entièrement refusé avant exécution, mais le message indique clairement quelle information est interdite et que la FAQ peut être demandée séparément. Aucun traitement de sous-lot n'est ajouté.
+
+**Validation : 101 tests réussis**, comprenant les 89 précédents maintenus avec adaptation des attentes concernées et 12 tests supplémentaires. Dix paraphrases documentaires, les références incorrectes/absentes, les refus, les injections, la complétude multi-FAQ et les lots mixtes dans les deux ordres sont notamment couverts. Le validateur des données et `git diff --check` réussissent. Les données et les trois outils métier sont inchangés.
+
+#### Méthode de réévaluation
+
+Les dix scénarios précédents ont été rejoués avec les mêmes questions, contextes et propositions d'appels mock, avant et après correction. La version avant modification a été conservée comme référence de comparaison. Les outils locaux réels ont été utilisés et les connexions réseau bloquées ; aucun appel Groq n'a eu lieu. Les outils exécutés sont identiques avant/après dans les dix cas ; les objets `results` exposés sont également identiques. Ils correspondent aux résultats déterministes. Les scénarios 5 et 10 ne divulguent aucun résultat protégé. Les propositions mock peuvent inclure un appel interdit pour tester explicitement la frontière de validation ; cela ne simule pas une décision spontanée de Groq.
+
+Les notes ci-dessous évaluent éditorialement la réponse entière, pas uniquement sa justesse technique. C = clarté, N = naturel, sur 5. Ce sont des appréciations subjectives, sans panel utilisateur ni métrique de qualité du modèle. Les 101 tests techniques ne suffisent pas à prouver la qualité conversationnelle.
+
+| Cas | Statut avant → après | Outils exécutés avant = après | C/N avant → après | Analyse |
+| --- | --- | --- | --- | --- |
+| 1. Délais de livraison | ok → ok | search_faq | 4/3 → 4/3 | Texte documentaire et réserve de garantie inchangés ; formulation encore administrative. |
+| 2. Délai de retour | clarification → ok | search_faq | 2/2 → 5/4 | Suppression de la clarification injustifiée ; réponse documentaire fidèle et complète pour ce besoin. |
+| 3. Commande livrée | ok → ok | get_order_status | 5/4 → 5/4 | Date de référence explicite ; le statut historique ne se présente plus comme une donnée temps réel. |
+| 4. Commande en préparation | ok → ok | get_order_status | 4/4 → 5/4 | La date de référence explique pourquoi une date prévue passée est affichée ; aucune livraison effective inventée. |
+| 5. Commande inaccessible | refused → refused | get_order_status | 4/3 → 4/3 | Refus neutre inchangé, sans confirmer l’existence ou le propriétaire de la commande. |
+| 6. Identifiant absent | clarification → clarification | aucun | 5/4 → 5/4 | Précision ciblée inchangée, sans inventer d’identifiant. |
+| 7. Ventes septembre 2026 | ok → ok | sales_summary | 4/4 → 5/4 | Le sens du chiffre d’affaires réalisé est explicité ; les montants sont inchangés. |
+| 8. Période sans commandes | ok → ok | sales_summary | 4/2 → 5/4 | La longue liste de zéros disparaît du texte, sans perte des indicateurs JSON. |
+| 9. Suivi et FAQ | ok → ok | get_order_status, search_faq | 4/3 → 5/4 | Les deux besoins sont conservés ; le titre FAQ devient « Délais de livraison ». |
+| 10. FAQ et ventes interdites | refused → refused | aucun | 2/2 → 4/3 | Le refus explique la restriction commerciale et l’accès séparé à la FAQ. Il ne satisfait toujours pas la partie FAQ. |
+
+Exactitude et permissions : aucun chiffre, date ou texte documentaire n'a été inventé dans ces exemples. Le résultat documentaire du scénario 2 était déjà correct avant correction ; son statut et son préambule erronés ont changé. Les bilans financiers gardent les mêmes valeurs et définitions. Le scénario 8 conserve tous ses zéros dans le JSON, sans les répéter dans le texte. Le scénario 10 reste un refus complet, sans résultat FAQ ou financier exposé : l'amélioration est explicative, pas une nouvelle permission. Les scénarios historiques 3, 4 et 9 sont explicitement datés.
+
+#### Réponses exactes avant/après
+
+**1. Délais de livraison**
+
+Question : « Quels sont les délais de livraison ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.
+> Référence : FAQ AtlasShop, FAQ-002.
+
+Après :
+
+> La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.
+> Référence : FAQ AtlasShop, FAQ-002.
+
+**2. Délai de retour**
+
+Question : « Quel est le délai de retour ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Résultats partiels : voici les informations disponibles. Pouvez-vous préciser les autres points à vérifier ?
+> La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.
+> Référence : FAQ AtlasShop, FAQ-015.
+
+Après :
+
+> La politique fictive prévoit une demande dans les sept jours calendaires suivant la livraison.
+> Référence : FAQ AtlasShop, FAQ-015.
+
+**3. Commande livrée**
+
+Question : « Où est ma commande CMD-DEMO-001 ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Votre commande CMD-DEMO-001 est livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.
+
+Après :
+
+> Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.
+
+**4. Commande en préparation**
+
+Question : « Où est ma commande CMD-DEMO-002 ? » ; contexte : `role=client, customer_id=CLI-002`.
+
+Avant :
+
+> Votre commande CMD-DEMO-002 est en préparation. La date de livraison prévue est le 4 octobre 2026.
+
+Après :
+
+> Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-002 était en préparation. La date de livraison prévue était le 4 octobre 2026.
+
+**5. Commande inaccessible**
+
+Question : « Où est ma commande CMD-DEMO-002 ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Je ne peux pas afficher cette commande : elle est introuvable ou votre profil ne permet pas de la consulter. Vérifiez le numéro indiqué.
+
+Après :
+
+> Je ne peux pas afficher cette commande : elle est introuvable ou votre profil ne permet pas de la consulter. Vérifiez le numéro indiqué.
+
+**6. Identifiant absent**
+
+Question : « Où est ma commande ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Pour consulter le suivi, pouvez-vous préciser le numéro de votre commande au format CMD-DEMO-XXX ?
+
+Après :
+
+> Pour consulter le suivi, pouvez-vous préciser le numéro de votre commande au format CMD-DEMO-XXX ?
+
+**7. Ventes septembre 2026**
+
+Question : « Résume les ventes de septembre 2026. » ; contexte : `role=analyste`.
+
+Avant :
+
+> Voici le bilan du 1er septembre 2026 au 30 septembre 2026 inclus : 87 commandes. Les statuts sont ceux du 1er octobre 2026.
+> - Montant total commandé : 109 544,30 MAD.
+> - Montant des commandes payées : 66 261,30 MAD.
+> - Chiffre d’affaires réalisé : 29 157,20 MAD.
+> - Annulations : 2 (2 082,30 MAD) ; retours : 1 (2 252,50 MAD).
+> - Retards : 12, dont 4 pour la livraison initiale et 8 sur des commandes encore en cours.
+
+Après :
+
+> Voici le bilan du 1er septembre 2026 au 30 septembre 2026 inclus : 87 commandes. Les statuts sont ceux du 1er octobre 2026.
+> - Montant total commandé : 109 544,30 MAD.
+> - Montant des commandes payées : 66 261,30 MAD.
+> - Chiffre d’affaires réalisé (commandes livrées et payées) : 29 157,20 MAD.
+> - Annulations : 2 (2 082,30 MAD) ; retours : 1 (2 252,50 MAD).
+> - Retards : 12, dont 4 pour la livraison initiale et 8 sur des commandes encore en cours.
+
+**8. Période sans commandes**
+
+Question : « Résume les ventes de septembre 2025. » ; contexte : `role=analyste`.
+
+Avant :
+
+> Voici le bilan du 1er septembre 2025 au 30 septembre 2025 inclus : aucune commande sur cette période. Les statuts sont ceux du 1er octobre 2026.
+> - Montant total commandé : 0,00 MAD.
+> - Montant des commandes payées : 0,00 MAD.
+> - Chiffre d’affaires réalisé : 0,00 MAD.
+> - Annulations : 0 (0,00 MAD) ; retours : 0 (0,00 MAD).
+> - Retards : 0, dont 0 pour la livraison initiale et 0 sur des commandes encore en cours.
+
+Après :
+
+> Aucune commande n’a été enregistrée du 1er septembre 2025 au 30 septembre 2025 inclus. Le montant des ventes pour cette période est donc nul. Données de démonstration arrêtées au 1er octobre 2026.
+
+**9. Suivi et FAQ**
+
+Question : « Où est ma commande CMD-DEMO-001 ? Et quels sont les délais de livraison ? » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Le suivi de votre commande
+> Votre commande CMD-DEMO-001 est livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.
+>
+> À propos de votre question
+> La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.
+> Référence : FAQ AtlasShop, FAQ-002.
+
+Après :
+
+> Le suivi de votre commande
+> Selon les données de démonstration au 1er octobre 2026, votre commande CMD-DEMO-001 était livrée. La livraison a eu lieu le 22 juillet 2026, à la date prévue.
+>
+> Délais de livraison
+> La date prévue est fixée à cinq jours calendaires après la commande ; il ne s’agit pas d’une garantie.
+> Référence : FAQ AtlasShop, FAQ-002.
+
+**10. FAQ et ventes interdites**
+
+Question : « Quels sont les délais de livraison ? Et résume les ventes de septembre 2026. » ; contexte : `role=client, customer_id=CLI-001`.
+
+Avant :
+
+> Votre profil ne permet pas de consulter ces informations.
+
+Après :
+
+> Les statistiques de vente ne sont pas accessibles avec votre profil client. Les renseignements généraux sur les livraisons restent accessibles ; vous pouvez les demander séparément.
+
+
+#### Limites et décision
+
+Le rendu Python apporte ici des corrections mesurables de comportement et de présentation : scénario retour en succès, bilan vide plus court et refus mixte plus explicite. La qualité reste perfectible : le texte FAQ conserve le style de sa source, les avertissements historiques allongent le suivi, et le refus d'un lot mixte oblige à reformuler la partie autorisée. La grammaire et la recherche lexicale ne comprennent pas toutes les paraphrases. Une reformulation LLM ne résoudrait pas à elle seule ces limites de complétude ou de permission ; aucun nouveau besoin d'appel LLM n'est démontré par cette réévaluation limitée.
+
+Les changements locaux antérieurs sont préservés sur `fix/groq-tool-selection`. Aucun secret exposé, aucune modification des données ou des outils métier, aucun appel Groq, aucun commit ni push. La tâche 5 n'est pas commencée.

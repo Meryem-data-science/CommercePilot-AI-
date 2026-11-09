@@ -17,6 +17,7 @@ class ProviderQuota(ProviderError):
 class GroqClient:
     def __init__(self):
         # N'effectue aucune requête : construction paresseuse à la première sélection.
+        self.request_metadata = []
         self.model = os.environ.get('GROQ_MODEL')
         self.key_present = bool(os.environ.get('GROQ_API_KEY'))
 
@@ -28,9 +29,16 @@ class GroqClient:
         except ImportError:
             raise ProviderError() from None
         try:
+            options = {'reasoning_effort':'low'} if self.model in ('openai/gpt-oss-20b','openai/gpt-oss-120b') else {}
+            self.request_metadata.append({'tool_choice':config.get('tool_choice','auto'), 'finish_reason':None})
             with Groq(api_key=os.environ['GROQ_API_KEY'], timeout=config['api_timeout_seconds'], max_retries=0) as client:
                 response = client.chat.completions.create(model=self.model, messages=messages, tools=tools,
-                            tool_choice='auto', max_completion_tokens=config['max_output_tokens'], temperature=0)
+                            tool_choice=config.get('tool_choice','auto'), parallel_tool_calls=False, max_completion_tokens=config['max_output_tokens'], temperature=0, **options)
+            reason = response.choices[0].finish_reason
+            # Liste blanche seulement : aucun texte, raisonnement ou identifiant distant.
+            self.request_metadata[-1]['finish_reason'] = reason if reason in ('stop','tool_calls','length','content_filter') else 'other'
+            if reason in ('length','content_filter'):
+                raise ProviderError()  # Ne jamais exécuter une sortie tronquée.
             message = response.choices[0].message
             return {'calls':[{'id':c.id,'name':c.function.name,'arguments':c.function.arguments}
                              for c in (message.tool_calls or [])]}
