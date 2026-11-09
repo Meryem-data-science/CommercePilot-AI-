@@ -1,0 +1,31 @@
+{
+  "scope": "seven local mock interactions; not Groq latency or production metrics",
+  "sample_order": [
+    "faq",
+    "authorized_order",
+    "authorized_sales",
+    "access_refusal",
+    "clarification",
+    "provider_failure",
+    "tool_failure"
+  ],
+  "formulas": {
+    "error_rate": "count(status=error)/N",
+    "refusal_rate": "count(status=refused)/N",
+    "mean_latency_ms": "sum(duration_ms)/N",
+    "p95_latency_ms": "sorted(duration_ms)[ceil(0.95*N)-1]",
+    "mean_tools_per_request": "sum(tool_count)/N"
+  },
+  "metrics": {
+    "request_count": 7,
+    "error_count": 2,
+    "technical_error_count": 2,
+    "refusal_count": 1,
+    "clarification_count": 1,
+    "error_rate": 0.2857142857142857,
+    "refusal_rate": 0.14285714285714285,
+    "mean_latency_ms": 1.7426951431584061,
+    "p95_latency_ms": 3.8702200008629006,
+    "mean_tools_per_request": 0.7142857142857143
+  }
+}

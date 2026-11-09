@@ -462,3 +462,120 @@ Vérifications effectivement exécutées : **106 tests réussis**, dont les 101 
 Un navigateur Chromium réel piloté par Playwright a chargé l'accueil, la FAQ puis le suivi en mode mock, sur un viewport desktop de 1440 pixels et un viewport mobile de 390 pixels. Aucun débordement horizontal n'a été observé sur mobile. L'inspection des captures réelles a permis de corriger le contraste des boutons latéraux. Des captures de contrôle ont été produites dans le dossier de travail, sans être ajoutées au dépôt ; aucune capture n'est fabriquée. À conserver pour le rapport après validation : accueil, FAQ et sa référence, suivi et dates, analytics et KPI, refus, clarification et écran mobile avec menu replié. Aucun secret ne doit figurer dans ces images.
 
 Limites : le mode mock repose sur les formulations reconnues ; le mode Groq de cette interface n'a pas fait l'objet d'un nouvel appel distant. L'historique n'est conservé que dans la session serveur, sans base persistante. Les identités restent simulées, l'application n'est ni multi-tenant authentifiée ni prête à exposer des données réelles. La personnalisation CSS dépend de marqueurs Streamlit et devra être vérifiée lors d'une mise à jour. Les composants sont standards et la page s'adapte aux petits écrans, sans revendiquer une certification d'accessibilité. Aucun engagement de performance ou déploiement n'est revendiqué. La tâche 6 n'est pas commencée.
+
+
+## Traçabilité et observabilité — tâche 6
+
+### Objectif et architecture
+
+Cette tâche ajoute une télémétrie locale sans modifier l'interface Streamlit fusionnée, les données AtlasShop ni les règles métier. La branche `feat/observability-monitoring` part de `origin/main` au commit `e669b03`. `src/observability.py` fournit le décorateur `observed` appliqué à `run_agent` : il mesure le temps avec une horloge monotone et enregistre une trace à la sortie, y compris lors d'une exception inattendue, qui reste propagée comme auparavant. Le résultat retourné n'est ni enrichi ni reformulé. Les modes Mock et Groq empruntent la même fonction ; aucun appel API réel n'a été effectué pour cette tâche.
+
+Chaque trace contient une version de schéma, un UUID aléatoire par interaction, un horodatage UTC, le statut final, la durée en millisecondes, les noms d'outils sur liste blanche, leur nombre, un booléen de refus, le type d'erreur sur liste blanche et une représentation de la réponse finale par catégorie uniquement (`content=not_retained`). Le champ `result_available` indique si un résultat structuré était disponible. Aucun texte de réponse n'est conservé, même après filtrage regex : supprimer le contenu évite de manquer une donnée sensible imprévue. Il n'y a aucun prompt, rôle, identité, numéro de commande, montant individuel, exception brute, secret, modèle configuré ou raisonnement privé dans la trace.
+
+Le stockage par défaut est `logs/agent_events.jsonl`, déjà exclu de Git. Un append est effectué sous verrou de thread ; le fichier est créé avec des permissions 0600. Le contenu d'un fichier préexistant n'est pas réécrit et ses permissions ne sont pas automatiquement modifiées. Les défauts de préparation des métadonnées et d'écriture sont absorbés sans modifier le résultat métier ni afficher les détails de la panne. L'injection de sink via `ContextVar` permet les tests sans interférence entre contextes. Il n'y a ni service payant, ni Docker, ni MLflow.
+
+### Évaluation reproductible et consultation
+
+```bash
+.venv/bin/python -m evaluation.run_monitoring
+.venv/bin/python -m src.observability --path evaluation/anonymized_traces.jsonl
+# Synthèse des journaux locaux réels, après utilisation de l'agent :
+.venv/bin/python -m src.observability
+```
+
+`evaluation/run_monitoring.py` exécute sept interactions mock avec les véritables outils locaux : FAQ, suivi autorisé, ventes autorisées, refus d'accès, précision d'identifiant, panne fournisseur simulée et panne d'outil simulée. Les connexions réseau sont bloquées pendant l'évaluation. Les assertions vérifient les sept statuts attendus. Le script génère les traces expurgées `evaluation/anonymized_traces.jsonl`, les valeurs et formules dans `evaluation/monitoring_summary.json`, ainsi qu'une synthèse visuelle sous forme de tableau Markdown dans `evaluation/monitoring_summary.md`. Ces exemples ne sont pas des journaux de production. Relancer le script remplace cet échantillon d'évaluation, jamais le journal runtime.
+
+La consultation est locale et agrégée ; aucun écran de traces individuelles n'est ajouté à l'application publique. Le style Streamlit est intégralement préservé. Les sept interactions ont toutes `result_available=true`. L'outil de suivi ayant réellement exécuté son contrôle de propriété lors du refus est compté ; la panne d'outil est aussi un appel exécuté, même sans succès. Le nombre d'appels ne doit donc pas être interprété comme un nombre de succès.
+
+### Définitions des indicateurs
+
+N désigne toutes les traces valides du lot, succès, erreurs, refus et clarifications inclus. Le taux d'erreur est `nombre(status=error)/N`. Un refus (`status=refused`) et une clarification (`status=clarification`) ne sont pas comptés comme erreurs. Le nombre d'erreurs techniques est également exposé séparément : fournisseur, timeout, quota, configuration, réponse fournisseur invalide, outil et exception inattendue. Un `error` lié à une entrée ou à la sélection n'est donc pas automatiquement qualifié de panne technique.
+
+La latence moyenne est `somme(duration_ms)/N`. Le P95 utilise le rang supérieur le plus proche : trier les durées et prendre le rang `ceil(0.95*N)`, en commençant à 1. La moyenne d'outils est `somme(tool_count)/N`. Le taux de refus est `nombre(status=refused)/N`. Avec N=0, les taux et latences sont nulls JSON (`null`), sans prétendre avoir mesuré zéro. La durée couvre l'exécution de l'orchestrateur jusqu'à son retour, mais pas l'écriture du journal ni le rendu Streamlit.
+
+### Mesures réellement obtenues
+
+Échantillon local mock : **7 requêtes**, 3 succès, 2 erreurs techniques simulées, 1 refus et 1 clarification. Il s'agit d'une vérification fonctionnelle contenant volontairement des pannes, pas d'une estimation de fiabilité ou de latence Groq.
+
+| Indicateur | Mesure observée |
+| --- | --- |
+| Taux d'erreur | 2/7 = 28.57 % |
+| Latence moyenne | 1.742695 ms |
+| Latence P95 | 3.870220 ms |
+| Nombre moyen d'outils | 5/7 = 0.714286 |
+| Taux de refus | 1/7 = 14.29 % |
+
+Les valeurs complètes, non arrondies, sont dans le JSON livré. Sur sept observations, le P95 correspond au maximum et reste très instable. Les durées varieront lors d'une nouvelle exécution ; elles ne sont pas fixées dans les tests.
+
+### Exemples réellement produits
+
+Une trace de succès, une de refus et une de panne fournisseur sont reproduites ci-dessous ; les autres figurent dans le JSONL anonymisé.
+
+```json
+{
+  "schema_version": 1,
+  "result_available": true,
+  "request_id": "c19a3e99-ace9-4fdb-91c5-6371f3798d3d",
+  "timestamp": "2026-11-09T22:00:12.876575+00:00",
+  "status": "ok",
+  "duration_ms": 2.757897999799752,
+  "tools_called": [
+    "search_faq"
+  ],
+  "tool_count": 1,
+  "refused": false,
+  "error_type": null,
+  "final_answer": {
+    "category": "ok",
+    "content": "not_retained"
+  }
+}
+```
+
+```json
+{
+  "schema_version": 1,
+  "result_available": true,
+  "request_id": "fde854c9-ff91-410d-b9e2-e9684f09c3dd",
+  "timestamp": "2026-11-09T22:00:12.885942+00:00",
+  "status": "refused",
+  "duration_ms": 2.0964330005881493,
+  "tools_called": [
+    "get_order_status"
+  ],
+  "tool_count": 1,
+  "refused": true,
+  "error_type": "access_denied",
+  "final_answer": {
+    "category": "refused",
+    "content": "not_retained"
+  }
+}
+```
+
+```json
+{
+  "schema_version": 1,
+  "result_available": true,
+  "request_id": "5d9c1473-94e0-44a5-a7b1-5c0c2ffa2d6c",
+  "timestamp": "2026-11-09T22:00:12.888425+00:00",
+  "status": "error",
+  "duration_ms": 0.18105199978890596,
+  "tools_called": [],
+  "tool_count": 0,
+  "refused": false,
+  "error_type": "provider",
+  "final_answer": {
+    "category": "error",
+    "content": "not_retained"
+  }
+}
+```
+
+### Tests, confidentialité et limites
+
+**115 tests réussis** : les 106 tests existants et neuf tests de télémétrie couvrant structure, UUID distincts, durées/statuts, absence de contenu privé, valeurs sur listes blanches, formules/P95, échantillon vide, stockage privé, panne de sink, panne de métadonnées et exception propagée sans divulgation. Les tests existants de permissions et de réponses métier restent réussis, de même que le transport SDK simulé. Le validateur des données et `git diff --check` réussissent. Les sept scénarios de génération fournissent en plus des traces cohérentes pour les sorties normales et les pannes.
+
+La suppression des textes empêche de reconstruire une conversation à partir du journal ; cette perte de détail est volontaire. Les appels non retournés lors d'une exception inattendue ne sont pas connus : `result_available=false`, liste d'outils vide, et leur comptage n'est pas exhaustif. Les pannes de logging peuvent perdre une observation ; les métriques décrivent uniquement les traces collectées, sans garantir la complétude. Il n'y a pas encore de rotation, rétention automatique, alerting, corrélation distribuée ou stockage durable sur Streamlit Community Cloud. Le verrou protège les threads du processus, pas un déploiement multi-processus. L'horodatage et l'UUID doivent rester réservés à l'exploitation ; ne pas rendre les journaux publics, même si leur contenu métier a été supprimé. Les artefacts d'évaluation partagés ne contiennent que des événements synthétiques.
+
+Captures utiles au rapport : tableau agrégé de `monitoring_summary.md` avec le périmètre N=7 visible ; extrait des traces anonymisées succès/refus/erreur ci-dessus. Aucune capture n'a été fabriquée. Les captures doivent exclure les fichiers de configuration, secrets, prompts et réponses brutes. Le design Streamlit n'a pas été modifié. Aucun appel Groq réel, aucun commit ni push, tâche 7 non commencée.

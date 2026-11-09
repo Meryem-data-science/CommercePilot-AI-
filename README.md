@@ -159,3 +159,15 @@ git diff --check
 ```
 
 Captures utiles à conserver après exécution : accueil desktop, FAQ avec référence, suivi autorisé et ses dates, bilan analyste avec KPI, refus d'accès, clarification et vue mobile. Ne jamais inclure la configuration des secrets. Les captures doivent provenir de l'application réellement exécutée, jamais être fabriquées.
+
+
+## Monitoring local — tâche 6
+
+Chaque appel à `run_agent` produit une trace minimale dans `logs/agent_events.jsonl` (ignoré par Git). Aucun prompt, réponse brute, identifiant client/commande ou raisonnement privé n'est conservé. Une panne d'écriture ne bloque pas l'agent. Les journaux runtime restent privés et ne sont pas affichés dans Streamlit.
+
+```bash
+.venv/bin/python -m evaluation.run_monitoring
+.venv/bin/python -m src.observability --path evaluation/anonymized_traces.jsonl
+```
+
+L'évaluation est exclusivement mock et génère sept traces anonymisées, `evaluation/monitoring_summary.json` et un tableau lisible dans `evaluation/monitoring_summary.md`. Elle inclut volontairement des refus et pannes ; ses taux ne représentent pas la fiabilité de Groq. Pour les traces runtime locales, utiliser `.venv/bin/python -m src.observability`. Les formules, mesures, limites de rétention et règles de confidentialité figurent dans la section de tâche 6 du rapport progressif.
