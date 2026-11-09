@@ -16,7 +16,7 @@ Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter u
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Aucune interface, CI/CD ou déploiement n'est réalisé ; les appels Groq distants restent non vérifiés. La vérification distante Groq, Streamlit, MLflow et GitHub Actions restent à réaliser. Une CLI mock est disponible ; aucune interface web n'est créée.
+Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Les trois outils ont été validés avec Groq lors de la tâche 4. La tâche 5 ajoute une interface Streamlit locale, avec mode mock autonome et mode Groq configurable. Aucun pipeline CI/CD, MLflow ni déploiement public n'est réalisé.
 
 ## Documentation
 
@@ -26,7 +26,7 @@ Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement 
 
 ## Architecture prévisionnelle
 
-L'interface Streamlit transmettra une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci pourra solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précéderont l'accès aux sources synthétiques ; les outils sensibles réappliqueront les contrôles. La réponse devra rester fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
+L'interface Streamlit transmet une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci peut solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précèdent l'accès aux sources synthétiques ; les outils sensibles réappliquent les contrôles. La réponse reste fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
 
 ## Structure du dépôt
 
@@ -40,7 +40,7 @@ CommercePilot-AI-/
 ├── evaluation/        # Réservé aux évaluations futures
 ├── docs/              # Cadrage, architecture, rapport progressif
 ├── .python-version    # Version cible exacte : 3.11.14
-├── requirements.txt   # Aucune dépendance tierce à cette étape
+├── requirements.txt   # SDK Groq et Streamlit
 ├── .env.example       # Noms de configuration, valeurs vides
 ├── .gitignore
 └── README.md
@@ -76,7 +76,7 @@ export PIP_CACHE_DIR=/tmp/commercepilot-pip-cache
 .venv/bin/python -m pip check
 ```
 
-Le raccourci global `python3.11` n'a pas pu être créé dans le répertoire personnel en lecture seule ; le chemin explicite permet de créer le virtualenv. `.python-version` documente la version cible mais ne remplace pas l'installation de l'interpréteur. Aucune dépendance tierce n'étant requise pour la tâche 2, le fichier de dépendances ne contient que des commentaires ; les versions seront fixées lors de leur ajout. Les commandes devront être relancées sur un nouveau poste : sa validation n'est pas revendiquée ici.
+Le raccourci global `python3.11` n'a pas pu être créé dans le répertoire personnel en lecture seule ; le chemin explicite permet de créer le virtualenv. `.python-version` documente la version cible mais ne remplace pas l'installation de l'interpréteur. À la tâche 2, aucune dépendance tierce n'était requise ; le fichier actuel fixe les versions directes de Groq et Streamlit. Les commandes devront être relancées sur un nouveau poste : sa validation n'est pas revendiquée ici.
 
 ## Configuration et secrets
 
@@ -87,7 +87,7 @@ Pour préparer une configuration locale future, sans écraser un fichier existan
 cp -n .env.example .env
 ```
 
-Cette copie est facultative à la tâche 2 : aucun composant ne lit encore ces variables. `GROQ_API_KEY`, `GROQ_MODEL` et `MLFLOW_TRACKING_URI` sont des emplacements futurs, laissés vides. Ne jamais placer une clé dans `.env.example`, le code, un rapport ou une capture. `.env` et ses variantes, les clés privées, les secrets Streamlit et les logs sont ignorés par Git ; `.env.example` reste versionnable. Utiliser ultérieurement les réglages sécurisés de l'environnement ou les secrets GitHub Actions pour l'injection des identifiants. Les règles d'exclusion ne remplacent pas une revue avant chaque commit.
+Cette copie reste facultative et ne configure pas automatiquement l'application : Groq lit `GROQ_API_KEY` et `GROQ_MODEL` dans l'environnement du serveur. `MLFLOW_TRACKING_URI` reste réservé à une étape future. Ne jamais placer une clé dans `.env.example`, le code, un rapport ou une capture. `.env` et ses variantes, les clés privées, les secrets Streamlit et les logs sont ignorés par Git ; `.env.example` reste versionnable. Utiliser ultérieurement les réglages sécurisés de l'environnement ou les secrets GitHub Actions pour l'injection des identifiants. Les règles d'exclusion ne remplacent pas une revue avant chaque commit.
 
 ## Données synthétiques — tâche 3.A
 
@@ -130,3 +130,32 @@ PIP_CACHE_DIR=/tmp/commercepilot-pip-cache .venv/bin/python -m pip install -r re
 Le mock est scripté et fonctionne sans clé ni réseau. Pour le mode réel, injecter `GROQ_API_KEY` de manière sécurisée et choisir un `GROQ_MODEL` compatible tool calling ; aucun modèle n'est codé en dur. Ne pas placer de secret dans les fichiers versionnés. La commande facultative `.venv/bin/python -m src.agent --mode groq --question 'Quels sont les délais de livraison ?'` n'a pas été exécutée avec l'API distante.
 
 `configs/agent.yaml` utilise la syntaxe JSON, sous-ensemble YAML : 3 itérations, 3 appels d'outils, timeout API de 10 secondes, sortie de 512 tokens, entrée de 1500 caractères et 4 questions d'historique. L’identifiant et la période doivent être explicites : deux dates ISO ou un mois français avec son année (par exemple septembre 2026). Le contexte de rôle reste simulé et le filtre lexical d'injection reste limité. En cas de `provider`, vérifier variables et modèle sans afficher la clé ; `timeout` et `quota` n'entraînent aucune relance automatique. La tâche 5 n'est pas commencée.
+
+
+## Interface Streamlit — tâche 5
+
+L'interface réutilise l'orchestrateur sécurisé et ses réponses déterministes. Dans un environnement Python 3.11.14 préparé selon les instructions ci-dessus :
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m streamlit run app.py
+```
+
+Ouvrir l'adresse locale affichée (port 8501 par défaut). Pour un environnement cloud, lancer si nécessaire avec `--server.address=0.0.0.0` et ouvrir ce port via le mécanisme de prévisualisation de la plateforme. Cela ne constitue pas un déploiement public.
+
+Le mode **Mock**, sélectionné par défaut, ne nécessite aucun secret ni réseau : il crée des plans scriptés pour les formulations reconnues par l'orchestrateur, puis exécute les véritables outils locaux. Il ne prétend pas comprendre librement toutes les questions. Les boutons de suggestion fournissent des exemples compatibles. Le mode **Groq** n'est proposé que lorsque `GROQ_API_KEY` et `GROQ_MODEL` sont présentes dans l'environnement du serveur. Leurs valeurs ne sont pas affichées. La présence des variables ne garantit pas que l'API ou le modèle fonctionne. Les variables doivent être injectées par la configuration sécurisée ; l'application ne copie ni ne charge automatiquement de fichier `.env`. Aucun modèle n'est imposé.
+
+Choisir le profil simulé et, pour un client, son identifiant synthétique. L'historique, les sélections et le dernier résultat vivent dans `st.session_state`. Tout changement de profil, de client ou de mode efface la conversation ; le bouton « Nouvelle conversation » fait de même. Les quatre dernières questions seulement sont transmises à l'orchestrateur. Chaque question en mode Groq peut appeler l'API et entraîner des coûts ; aucune relance automatique n'est ajoutée par l'interface.
+
+La réponse, les références FAQ et les outils effectivement exécutés sont affichés. Les suivis réussis ont une carte de dates ; les analyses réussies présentent trois KPI distincts. Les refus et erreurs ne révèlent aucun résultat accumulé. Les demandes de précision et réponses partielles restent signalées. Les données sont fictives et historiques au 1er octobre 2026 ; les profils ne constituent pas une authentification. Cette interface ne doit pas être exposée comme un espace client de production. Aucune modification de commande ou remboursement n'est possible.
+
+Vérifications :
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python data/validate_data.py
+.venv/bin/python -m pip check
+git diff --check
+```
+
+Captures utiles à conserver après exécution : accueil desktop, FAQ avec référence, suivi autorisé et ses dates, bilan analyste avec KPI, refus d'accès, clarification et vue mobile. Ne jamais inclure la configuration des secrets. Les captures doivent provenir de l'application réellement exécutée, jamais être fabriquées.
