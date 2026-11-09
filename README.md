@@ -220,3 +220,17 @@ Voir [la procédure de bascule et la recette](docs/deployment.md). Point d'entr�
 ```
 
 Les cinq parcours sont vérifiés localement et le serveur répond à son contrôle de santé. Le bilan précis distingue local/public dans `deployment/verification.json`. L’application gardera sa branche source `feat/streamlit-interface`, son instance et son URL : seule une mise à jour Git sans force sera envisagée après revue/fusion. La vérification distante a toutefois révélé un commit propre `ee35bf9` (Dev Container) et neuf commits de retard : un fast-forward strict n’est pas possible tant que cette ascendance n’est pas intégrée à main par un merge revu. Après autorisation, un vrai merge de cet historique a été préparé sur `feat/deployment-finalization`, puis le fichier Dev Container a été retiré de l’arbre final. La PR doit être fusionnée avec **Create a merge commit**, sans squash/rebase. Aucun push de la branche déployée n’a été effectué. La procédure détaille les préconditions, la publication proposée et la recette publique différée. Aucun test public du code synchronisé n’est revendiqué.
+
+
+## Sécurité et gouvernance — tâche 11
+
+La démonstration publique reste en Mock, sur données synthétiques et profils sélectionnables sans authentification réelle. Ne pas y introduire de données réelles ni de clés Groq : la simple présence des deux variables rend actuellement le mode API disponible, sans quotas ou protection d'accès adaptés au public.
+
+Le [document de gouvernance](docs/governance.md) décrit les frontières, flux, conservation réelle et proposée, secrets et gestion d'incident. Le [registre des risques](docs/security_risks.md) distingue la démonstration de la production. Ces documents ne certifient ni un anonymat irréversible ni une sécurité absolue. Les cinq parcours publics ont été confirmés par la propriétaire après la tâche 10 ; le SHA runtime et Python restent à confirmer dans les logs Streamlit.
+
+```bash
+.venv/bin/python -m security.audit
+.venv/bin/python -m quality.check
+```
+
+L'audit local génère `security/audit_results.json`, sans recopier les valeurs détectées. Il contrôle les fichiers courants et les blobs atteignables de l'historique par motifs, pas les valeurs stockées dans les paramètres privés GitHub/Streamlit. Les preuves de tests de tâche 11 sont dans `security/quality_verification.json`. Aucune activation d'API ou modification de droits n'est effectuée.
