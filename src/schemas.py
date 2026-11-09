@@ -45,15 +45,15 @@ def valid_arguments(name, args):
     return False
 
 
-def function(name, properties, required):
-    return {'type':'function','function':{'name':name,'description':name,
+def function(name, description, properties, required):
+    return {'type':'function','function':{'name':name,'description':description,
             'parameters':{'type':'object','properties':properties,'required':required,'additionalProperties':False}}}
 
 
 TOOL_SCHEMAS = [
-    function('search_faq',{'query':{'type':'string','maxLength':500}},['query']),
-    function('get_order_status',{'order_id':{'type':'string','pattern':'^CMD-DEMO-[0-9]{3}$'}},['order_id']),
-    function('sales_summary',{'period':{'type':'object','properties':{'start_date':{'type':'string','format':'date'},'end_date':{'type':'string','format':'date'}},'required':['start_date','end_date'],'additionalProperties':False}},['period']),
+    function('search_faq', 'Consulter les politiques générales AtlasShop : délais, frais et zones de livraison, paiement, retours. Utiliser pour une question informative, sans identifiant de commande. Disponible pour tous les rôles.', {'query':{'type':'string','maxLength':500,'description':'Question générale en français, conservant les mots précis du besoin utilisateur.'}},['query']),
+    function('get_order_status', 'Consulter le statut et les dates d’une commande précise. Nécessite un identifiant explicite dans la question. Client : ses commandes seulement ; administrateur : autorisé ; analyste : interdit. Ne jamais inventer un identifiant.', {'order_id':{'type':'string','pattern':'^CMD-DEMO-[0-9]{3}$','description':'Identifiant CMD-DEMO-NNN fourni explicitement par la question actuelle.'}},['order_id']),
+    function('sales_summary', 'Calculer des agrégats de ventes sur une période explicite complète. Réservé aux analystes et administrateurs ; interdit aux clients. Ne pas inventer de dates ni utiliser de période relative.', {'period':{'description':'Bornes inclusives ISO, exactement égales à la période normalisée par l’application.','type':'object','properties':{'start_date':{'type':'string','format':'date'},'end_date':{'type':'string','format':'date'}},'required':['start_date','end_date'],'additionalProperties':False}},['period']),
 ]
 
 

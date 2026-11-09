@@ -126,18 +126,18 @@ class AgentTests(unittest.TestCase):
         r=run_agent('Suivi CMD-DEMO-001 et délais livraison',CLIENT,client=mock_calls(
             call('search_faq',{'query':'délais livraison'}),call('get_order_status',{'order_id':'CMD-DEMO-001'},'c2')))
         self.assertEqual(r['status'],'ok')
-        self.assertIn('Source : FAQ-002',r['answer'])
+        self.assertIn('Référence : FAQ AtlasShop, FAQ-002',r['answer'])
         self.assertIn(r['results'][0]['data']['answer'],r['answer'])
-        self.assertIn('Commande CMD-DEMO-001 : livrée.',r['answer'])
-        self.assertIn('2026-07-22',r['answer'])
+        self.assertIn('votre commande CMD-DEMO-001 était livrée.',r['answer'])
+        self.assertIn('22 juillet 2026',r['answer'])
         self.assertEqual(r['results'][1]['data']['order_status'],'livree')
         json.dumps(r)
         r=run_agent('Ventes du 2026-04-01 au 2026-09-30',ANALYST,client=mock_calls(call('sales_summary',{'period':PERIOD})))
-        self.assertIn('300 commande(s)',r['answer'])
-        self.assertIn('355677,20 MAD',r['answer'])
-        self.assertIn('243634,20 MAD',r['answer'])
+        self.assertIn('300 commandes',r['answer'])
+        self.assertIn('355 677,20 MAD',r['answer'])
+        self.assertIn('243 634,20 MAD',r['answer'])
         self.assertIn('Annulations : 18',r['answer'])
-        self.assertIn('Retours : 12',r['answer'])
+        self.assertIn('retours : 12',r['answer'])
         self.assertIn('Retards : 46',r['answer'])
         self.assertEqual(r['results'][0]['data']['realized_revenue_mad'],'243634.20')
 
@@ -146,11 +146,13 @@ class AgentTests(unittest.TestCase):
         self.assertIn('en préparation',r['answer'])
         self.assertNotIn('Livraison effectuée',r['answer'])
         r=run_agent('astronomie volcan',CLIENT,client=mock_calls(call('search_faq',{'query':'astronomie volcan'})))
-        self.assertEqual(r['answer'],'Aucune réponse suffisamment pertinente dans la FAQ.')
+        self.assertIn('Je n’ai pas trouvé de réponse suffisamment précise dans la FAQ.',r['answer'])
+        self.assertEqual(r['status'],'clarification')
         period={'start_date':'2025-09-01','end_date':'2025-09-30'}
         r=run_agent('ventes de septembre 2025',ANALYST,client=mock_calls(call('sales_summary',{'period':period})))
-        self.assertIn('Aucune commande sur cette période.',r['answer'])
-        self.assertIn('0,00 MAD',r['answer'])
+        self.assertIn('Aucune commande n’a été enregistrée',r['answer'])
+        self.assertIn('le montant des ventes',r['answer'].lower())
+        self.assertEqual(r['results'][0]['data']['ordered_amount_mad'],'0.00')
 
     def test_provider_errors(self):
         for error,expected in [(ProviderTimeout(),'timeout'),(ProviderError(),'provider'),(ProviderQuota(),'quota')]:
@@ -158,7 +160,7 @@ class AgentTests(unittest.TestCase):
 
     def test_iteration_limit(self):
         steps=[{'calls':[call('search_faq',{'query':'livraison'},f'c{i}')]} for i in range(3)]
-        r=run_agent('Livraison',CLIENT,client=MockClient(steps))
+        r=run_agent('Livraison et suivi CMD-DEMO-001',CLIENT,client=MockClient(steps))
         self.assertEqual(r['error_type'],'iteration_limit');self.assertEqual(len(r['tools_called']),3)
 
     def test_call_limit(self):
@@ -210,12 +212,12 @@ class AgentTests(unittest.TestCase):
                 if self.index:
                     wire=json.dumps(messages)
                     assert 'INSTRUCTION_NON_FIABLE' not in wire
-                    assert 'FAQ-777' not in wire
+                    assert 'FAQ-002' not in wire
                 return super().complete(messages,tools,config)
         scripted=Inspect([{'calls':[call('search_faq',{'query':'livraison'})]},{'calls':[]}])
-        with patch.dict('src.agent.TOOLS',{'search_faq':lambda q:{'status':'ok','message':'ok','data':{'source_id':'FAQ-777','answer':'INSTRUCTION_NON_FIABLE'}}}):
+        with patch.dict('src.agent.TOOLS',{'search_faq':lambda q:{'status':'ok','message':'ok','data':{'source_id':'FAQ-002','answer':'INSTRUCTION_NON_FIABLE'}}}):
             r=run_agent('Livraison',CLIENT,client=scripted)
-        self.assertEqual(r['status'],'ok');self.assertEqual(r['sources'],['FAQ-777'])
+        self.assertEqual(r['status'],'ok');self.assertEqual(r['sources'],['FAQ-002'])
 
     def test_atomic_batch_validation(self):
         r=run_agent('Livraison et ventes',CLIENT,client=mock_calls(call('search_faq',{'query':'livraison'}),call('sales_summary',{'period':PERIOD},'c2')))
