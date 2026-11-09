@@ -709,3 +709,35 @@ Ces contrôles forment un contrat local de promotion : comportement reproductibl
 Le scanner contrôle les fichiers versionnés et les fichiers non ignorés, et ne renvoie que le nom de fichier et la catégorie du problème. Il ne garantit pas la détection d'un secret arbitraire, encodé, absent de l'environnement ou d'une donnée personnelle non reconnaissable. Les fichiers ignorés non destinés à la publication ne sont pas couverts. Les règles statiques sont volontairement ciblées ; les limites lexicales de l'agent et l'identité simulée restent inchangées. Les gardes réseau visent les appels usuels Python, pas un confinement système contre un processus hostile. Les preuves de couverture varient si le code ou les tests changent ; aucun engagement de production n'est revendiqué.
 
 Aucun commit ni push. La tâche 9 et GitHub Actions ne sont pas commencées.
+
+
+## Intégration continue avec GitHub Actions — tâche 9
+
+### Architecture et sécurité
+
+La branche `feat/github-actions-ci` part de `origin/main` au commit `9b95cbd`, après fusion de la tâche 8. Le workflow `.github/workflows/ci.yml` exécute un unique job Ubuntu 24.04 avec Python 3.11.14, installe requirements.txt et requirements-dev.txt, puis lance la commande de qualité existante. L'agent, l'interface, les données, les permissions, les annotations et les résultats du corpus sont préservés. Il n'y a aucun déploiement automatique.
+
+Les événements sont les PR vers main, les pushs sur main et workflow_dispatch. Un groupe de concurrence par PR ou référence annule les anciennes exécutions ; un timeout de 15 minutes et le cache pip limitent la consommation. Les actions officielles sont épinglées : checkout v4.2.2 (`11bd71901bbe5b1630ceea73d27597364c9af683`), setup-python v5.6.0 (`a26af69be951a213d495a4c3e4e4022e16d87065`), upload-artifact v4.6.2 (`ea165f8d65b6e75b540449e92b4886f43607fa02`). Les trois SHA ont été vérifiés avec les références des dépôts officiels.
+
+Le jeton dispose uniquement de contents:read, n'est pas persisté par checkout, et aucun secret de dépôt n'est passé aux tests. Les variables Groq sont explicitement vides. Il n'y a pas de pull_request_target ni exécution à privilèges élevés. Les tests et l'évaluation réutilisent les gardes réseau de la tâche 8. L'installation des dépendances nécessite toutefois le réseau ; ce contrôle ne prétend pas constituer un sandbox contre du code hostile. Les dépendances transitives ne sont pas intégralement verrouillées.
+
+### Résultats et échecs
+
+`quality/ci_summary.py` projette les résultats sur une liste blanche de neuf noms de gates, valeurs numériques et booléens. Il produit le résumé du job et deux artefacts compacts, summary.json et summary.md, conservés trois jours. Aucun journal brut, prompt, réponse métier, erreur contenant un contenu privé, trace individuelle ou secret n'est téléversé. Les rapports détaillés restent accessibles localement dans work/quality/. Un marqueur de début permet d'éviter la réutilisation du rapport de tâche 8 versionné si le contrôle échoue avant de régénérer ses résultats. Un rapport absent, périmé ou malformé est signalé FAIL/indisponible.
+
+Le code de sortie du gate détermine le verdict du job ; il n'y a pas de continue-on-error. La synthèse et la publication des artefacts utilisent always() pour rester disponibles après échec, sans effacer celui-ci. Une panne d'installation ou d'exécution est donc un vrai échec, jamais un ancien PASS. Les métriques du benchmark restent celles du mock et ne mesurent pas un routage Groq spontané ni la fiabilité en production.
+
+### Vérifications réellement réalisées
+
+- YAML parsé et structure des événements, permissions et commande vérifiée.
+- actionlint 1.7.7 exécuté sans erreur ; son archive officielle a été contrôlée par le SHA-256 publié. L'outil a été utilisé localement sans ajouter Go ou actionlint aux dépendances de production.
+- `quality.check` exécuté avec variables Groq vides : **143 tests réussis**, sans échec ni test ignoré, et **9/9 gates réussis**. Les quatre tests supplémentaires vérifient la projection sans fuite, l'échec prioritaire même face à un rapport PASS, l'exclusion des rapports périmés et l'exclusion des valeurs textuelles arbitraires.
+- Couverture de src/ inchangée : 93,63 % des lignes, 90,34 % des branches et 92,73 % combinés. Les nouveaux helpers de CI sont hors de ce périmètre, mais testés.
+- Évaluation préservée : 45 scénarios, 42 réussis, 28/28 contrôles directs et zéro violation. EV-010, EV-016 et EV-022 restent documentés, sans ajustement des attentes.
+- Les preuves de cette validation locale sont conservées séparément dans evaluation/ci_local_results.json et evaluation/ci_local_summary.md ; les rapports de référence de la tâche 8 ont été préservés.
+
+### Première validation GitHub et limites
+
+**Aucun run GitHub Actions n'a encore été lancé.** Le protocole local valide les commandes et le YAML, pas le runner GitHub ni la politique du dépôt. Après autorisation de publication, ouvrir une PR vers main et vérifier Checks/Actions sur le bon SHA. Attendre un run entièrement réussi avant de qualifier la CI de fonctionnelle. La première PR peut nécessiter une approbation selon les règles GitHub. Le déclenchement manuel peut ne pas apparaître tant que le workflow n'est pas présent sur la branche par défaut ; aucun run distant n'est inventé.
+
+Captures à conserver après publication : URL et SHA du run, événements déclencheurs, étapes du job, neuf verdicts, nombre de tests, couverture, évaluation et artefacts disponibles. Aucun run vert ni capture distante n'est fabriqué. Le cache, les actions épinglées et les dépendances devront être maintenus. Les quotas de minutes/stockage dépendent du compte GitHub ; aucun service payant supplémentaire n'est configuré. Les protections de branche et les obligations de check restent à décider séparément. Aucun commit ni push pour cette tâche. Tâche 10 non commencée.

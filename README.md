@@ -16,7 +16,7 @@ Aucun rôle ne pourra modifier les données, annuler une commande ou exécuter u
 
 ## État actuel
 
-Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Les trois outils ont été validés avec Groq lors de la tâche 4. La tâche 5 ajoute une interface Streamlit locale, avec mode mock autonome et mode Groq configurable. Aucun pipeline CI/CD, MLflow ni déploiement public n'est réalisé.
+Les documents de cadrage (tâche 1), la structure du dépôt et l'environnement Python minimal (tâche 2) sont préparés. La tâche 3.A fournit maintenant les données synthétiques AtlasShop et leurs contrôles d'intégrité. Les trois outils métier indépendants du LLM sont implémentés à la tâche 3.B. La tâche 4 ajoute une orchestration bornée et un adaptateur Groq testé sur transport simulé. Les trois outils ont été validés avec Groq lors de la tâche 4. La tâche 5 ajoute une interface Streamlit locale, avec mode mock autonome et mode Groq configurable. La CI GitHub Actions est proposée à la tâche 9 et reste à vérifier sur GitHub. Aucun déploiement automatique ni intégration MLflow n’est réalisé.
 
 ## Documentation
 
@@ -183,3 +183,24 @@ L'évaluation est exclusivement mock et génère sept traces anonymisées, `eval
 Cette commande exécute les tests sous garde réseau, mesure la couverture de `src/`, lance le validateur AtlasShop et Ruff, contrôle les seuils de la tâche 7, les métriques et la reproductibilité, recherche des secrets dans les fichiers versionnés/non ignorés et vérifie les diffs Git. Elle renvoie 0 si tous les gates passent, 1 sinon. Les résultats sont dans `evaluation/quality_results.json` et `evaluation/quality_report.md`, les preuves intermédiaires dans `work/quality/` (ignoré par Git).
 
 Les seuils sont figés dans `quality/baseline.json` : 45 scénarios, au moins 42 réussis, aucun recul d'un scénario précédemment réussi, 28/28 contrôles directs et aucune violation de permission. Les échecs connus EV-010, EV-016 et EV-022 restent documentés ; les résultats de la tâche 7 ne sont jamais réécrits automatiquement. Le lint ciblé et la couverture ne remplacent pas un audit de sécurité. Aucun workflow GitHub Actions n'est créé.
+
+
+## Intégration continue GitHub Actions — tâche 9
+
+Le workflow `.github/workflows/ci.yml` propose un job Ubuntu 24.04 / Python 3.11.14 : installation des deux fichiers de dépendances, puis **un seul appel à `python -m quality.check`**. Il réutilise les neuf gates de la tâche 8, sans reproduire leurs calculs dans le YAML. Les contrôles sont exécutés sur les Pull Requests ciblant `main`, les pushs sur `main`, et à la demande (`workflow_dispatch`). Les pushs sur une branche de travail seule ne déclenchent pas ce workflow.
+
+Permissions limitées à `contents: read`, aucun `pull_request_target`, aucun secret transmis, variables Groq explicitement vides, jeton de checkout non persisté. Les actions officielles checkout v4.2.2, setup-python v5.6.0 et upload-artifact v4.6.2 sont épinglées par SHA. Leur correspondance aux tags officiels a été vérifiée. Les tests utilisent la garde réseau existante. Aucune étape n'appelle Groq ou ne déploie l'application.
+
+Les résultats apparaissent dans le résumé du job : nombre de tests, neuf verdicts, PASS/FAIL, couverture et conformité des 45 scénarios. Une erreur de `quality.check` fait échouer le job ; aucune option `continue-on-error` ne la masque. Le résumé peut encore être généré après un échec. Il n'accepte que des compteurs numériques et verdicts connus, et refuse de présenter un rapport versionné ancien comme un résultat frais. Les informations indisponibles restent signalées.
+
+Seuls `summary.json` et `summary.md`, projections sur liste blanche dans `work/ci/`, sont téléversés, pour **3 jours**. Les journaux bruts de tests, contenus de fichiers, traces individuelles et réponses métier ne sont pas publiés. Pour un diagnostic détaillé, reproduire localement avec `python -m quality.check` et consulter `work/quality/` ; les sorties brutes y restent locales. Les métriques du corpus sont celles d'un protocole simulé, jamais celles de Groq en production.
+
+Le timeout du job est de 15 minutes. Le cache pip limite les téléchargements et les exécutions plus anciennes du même groupe sont annulées. Aucun service payant n'est ajouté ; les quotas et éventuels coûts GitHub dépendent du compte et de la visibilité du dépôt. Il n'y a pas de déclenchement planifié ni de déploiement continu : la partie implémentée est la CI, pas la CD.
+
+### Validation et première exécution distante
+
+Le YAML a été vérifié avec actionlint 1.7.7 et les commandes testées dans Codex, avec les variables Groq vides. Les preuves locales sont `evaluation/ci_local_results.json` et `evaluation/ci_local_summary.md` ; elles ne prouvent pas que GitHub Actions fonctionne sur les runners GitHub.
+
+Après validation, publication de la branche et ouverture d'une PR vers `main`, consulter l'onglet **Checks** de la PR puis **Actions → CommercePilot quality**. Une approbation d'exécution peut être requise pour une contribution externe. Confirmer le SHA testé, le job vert, les neuf gates, les compteurs et les artefacts, puis conserver l'URL du run et ses captures. Ne déclarer la CI opérationnelle qu'après une exécution GitHub réussie. Le déclenchement manuel peut ne pas être proposé tant que le nouveau workflow n'existe pas sur la branche par défaut ; la PR sert donc à la première validation avant fusion.
+
+Captures utiles : déroulement du job, résumé des neuf gates, tests/couverture/évaluation et durée de rétention des artefacts. Aucune capture de réussite distante n'est fabriquée. Les protections de branche et l'obligation du check ne sont pas configurées automatiquement à cette étape.
