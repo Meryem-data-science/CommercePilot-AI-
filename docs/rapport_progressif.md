@@ -837,3 +837,149 @@ Les risques résiduels couvrent injections non exhaustivement détectées, quest
 **154 tests réussis**, dont les 146 précédents et huit tests de sécurité supplémentaires ; zéro échec/erreur/skip, neuf quality gates réussis, validateur AtlasShop et diff Git propres. Les 45 scénarios et leurs résultats restent inchangés : 42/45, 28/28 directs, zéro violation détectée et trois échecs connus conservés. Les preuves sont dans `security/audit_results.json` et `security/quality_verification.json`. Les nouvelles vérifications de sessions montrent l'isolation entre deux sessions, mais aussi qu'une session peut librement choisir administrateur : cette dernière observation est un risque de conception pour la production, pas une authentification réussie.
 
 Captures utiles : matrice des rôles, registre de risques avec gravités démo/production, synthèse des gates et contrôles de secrets sans valeurs, champs minimisés d'une trace synthétique et métadonnées de rétention CI. Ne pas capturer les secrets, prompts privés, réponses réelles ou URL temporaires de téléchargement. Aucune capture n'est fabriquée. Aucun code métier, donnée, corpus ou design n'est modifié ; aucun commit/push ou appel Groq réel ; tâche 12 non commencée. Le système reste une démonstration académique et non une solution certifiée ou prête pour des données de production.
+
+
+## Évaluation de l'agent avec MLflow
+
+### Objectif et protocole réutilisé
+
+L'intégration complémentaire sur feat/mlflow-agent-evaluation part de main
+9bcfb01273a3231f078cb82fc08608fd6e249d4c. MLflow **3.18.0**, Python **3.11.14** et
+uv **0.13.5** sont réservés à un environnement d'évaluation, distinct de Streamlit
+et de la CI standard. Les 107 versions de dépendances résolues sont contraintes
+pour Linux/Python 3.11. Aucun fichier de l'agent, des trois outils, du design,
+des données, de l'observabilité ou des références historiques n'est modifié.
+
+Les tests empêchent les régressions ; MLflow ajoute l'historique consultable des
+expériences, paramètres, métriques, assessments et artefacts. L'adaptateur réutilise
+load_cases, evaluate_case, metrics et les oracles CSV d'offline-v1. Les 45 cas sont
+réexécutés séquentiellement avec plans Mock et pannes simulées. La sortie doit
+correspondre à la référence historique et à ses empreintes, sinon l'exécution s'arrête.
+Dix scorers de code via **mlflow.genai.evaluate** vérifient statut, outils, erreurs,
+sources, données structurées, fidélité factuelle, permissions et verdict global.
+Les non-applicables ne deviennent pas des succès : **356 scores applicables**,
+avec null dans les artefacts pour les autres critères. Les instantanés natifs ne
+sont pas des spans internes de l'agent. Leur statut de trace MLflow OK signifie
+que l’instantané est traité ; il faut lire outputs.status et scenario_passed
+pour juger le résultat métier, notamment les refus et pannes simulés. Aucun juge LLM ni Groq réel n'est utilisé.
+
+### Résultats observés et historique préservé
+
+Les anciens runs Codex restent dans leur stockage initial :
+95b9ec7abdfd49c39c0773e85aacf709 (FAILED, Expectation nulle MLflow refusée puis
+corrigée sans changer les attentes), 4f4a607e7a174dc0966978b510da187c et
+06d853aba4024bd3a8942dc6cc49290b (FINISHED, 45 cas/356 scores). Ils ne sont pas
+supprimés ou importés comme de nouvelles mesures. Leurs bases et archives ne
+sont pas ajoutées au dépôt public. L'impossibilité signalée par la propriétaire
+de télécharger l'archive et de voir un panneau Desktop dans ChatGPT conduit à
+retenir une nouvelle exécution autonome dans un Codespace privé.
+
+La préparation Codespaces a été testée **dans un checkout neuf sous Codex** :
+sans environnement virtuel ni stockage précédents, setup_mlflow.sh a installé
+Python 3.11.14 et les paquets contraints. Les 45 scénarios ont produit le nouveau
+run **e2cc0f1540a14bac9dd81fec68282090**, expérience locale **1**, FINISHED.
+La relecture indépendante confirme **45 scénarios / 356 assessments**, métriques
+natives et artefacts, sans import de scores anciens.
+
+| Mesure | Numérateur / dénominateur | Valeur |
+| --- | --- | --- |
+| Scénarios / statuts conformes | 42/45 | 93,33 % |
+| Outils exécutés conformes | 45/45 | 100 % |
+| Données structurées conformes | 23/24 applicables | 95,83 % |
+| Fidélité factuelle contrôlée | 23/24 | 95,83 % |
+| Sources FAQ par occurrence | 12/13 | 92,31 % |
+| Permissions, cas sensibles | 10/10 | 100 % |
+| Violations détectées | 0 sur 45 cas | Aucune détectée |
+| Contrôles directs des outils | 28/28 | 100 % |
+| Clarifications obtenues | 9/45 | 20 % |
+| Réponses de statut error | 6/45 | 13,33 % |
+
+Ces rapports gardent les formules de tâche 7. Les numérateurs/dénominateurs sont
+aussi des métriques protocol.*. Les moyennes natives sont par cas applicable :
+rappel FAQ 11/12, différent de 12/13 par occurrences ; sources_exact 44/45 inclut
+les cas sans source attendue. Les contrôles directs natifs sont regroupés par
+scénario, ceux du protocole comptent chaque comparaison d'outil. Les violations
+restent séparées des moyennes. Les erreurs attendues de panne sont des scénarios
+réussis si correctement traitées ; error 6/45 ne mesure pas la production.
+
+EV-010 reste en échec lexical FAQ sur paraphrase ; EV-016/022 restent des
+incomplete_plan malgré des données correctes. Les attentes restent ok et les
+scores faux restent visibles. Les plans imposés n'évaluent ni le routage spontané
+ni la compréhension réelle de Groq. La fidélité est contrôlée par objets/fragments,
+pas par un jugement sémantique exhaustif ou une preuve de qualité conversationnelle.
+
+Durées de cette nouvelle mesure Mock : **0,111885 s** pour les 45 cas, moyenne
+**2,473 ms**, P95 au rang le plus proche **5,831 ms** (rang 43/45). Chaque cas
+inclut oracles, outils directs et l'agent ; le total comprend les projections.
+L'intervalle de suivi/scoring natif mesuré est **5,225643 s**, overhead inclus,
+hors initialisation du stockage et relecture finale. Ces mesures locales sont
+variables ; elles ne représentent ni Groq ni les performances de production.
+Chaque futur run du Codespace aura ses propres IDs, durées et paramètres.
+
+### Confidentialité, publication et accès public/privé
+
+La propriétaire autorise la publication du **code seulement** et une PR vers main,
+sans fusion automatique. Le dépôt reste **PUBLIC** ; sa visibilité n'est pas modifiée.
+Les exclusions Git et le code imposent work/mlflow/ pour les nouvelles sorties.
+SQLite, traces, scores individuels, preuves de test, archives et environnements
+restent privés/non versionnés. Les anciens chemins locaux evaluation/mlflow_*.json
+sont ignorés. Les résultats historiques de tâche 7 et les neuf gates sont préservés.
+Le workflow CI ne publie aucun artefact MLflow et n'installe pas cette dépendance.
+
+Les paramètres enregistrent commit réel, versions, empreintes de code/entrées,
+état du travail, mode Mock et versions offline-v1/mlflow-projection-v1 du protocole.
+Un experiment MLflow n'a pas ici de version native analogue à un modèle : ce sont
+des tags/paramètres explicites. Chaque run garde sa preuve privée sous
+work/mlflow/runs/<id>/ ; latest_results.json indique le plus récent, sans supprimer
+les précédents. La projection exportée exclut questions, réponses brutes, clients,
+commandes, arguments, secrets et raisonnement privé. Réseau bloqué pendant les cas
+et l'évaluation native, télémétrie désactivée, destination SQLite locale imposée.
+Les scans sont ciblés, pas une garantie DLP exhaustive ou de sécurité absolue.
+
+Le [guide Codespaces](mlflow_evaluation.md) donne les clics depuis la branche publiée
+et quatre commandes : setup, nouveau calcul Mock, relecture, dashboard. Aucun
+transfert d'archive Codex ni installation sur le PC n'est requis. Le serveur
+écoute sur loopback ; le domaine exact du Codespace est autorisé sans wildcard,
+CORS/middleware conservés. Le port **5000 doit rester Private** sous authentification
+GitHub. La propriétaire ouvre GenAI → CommercePilot-Agent-Evaluation → Evaluation
+runs, puis le run imprimé → Traces / Artifacts. Filtrer par run permet de voir
+ses 45 cas plutôt que toutes les exécutions. known_failures.json présente les
+trois échecs ; scenario_scores.json contient les valeurs réellement calculées.
+
+Captures utiles : run et provenance, métriques protocol.*, 45 cas du run choisi,
+un cas réussi, trois échecs avec false, et liste des artefacts. Les captures
+proviennent du vrai MLflow ; aucune copie de tableau n'est présentée comme un dashboard.
+La création effective d'un Codespace, la connexion et le port privé dans le compte
+de la propriétaire **restent à confirmer par elle**. Le test reproductible local
+ne prétend pas vérifier des permissions ou quotas GitHub distants.
+
+### Validation et limites du Codespace gratuit
+
+**170 tests réussis**, dont seize tests d'intégration contractuelle/confidentialité,
+zéro échec/erreur/skip, **9/9 quality gates PASS**, Ruff, validateur AtlasShop et
+diff propres. Couverture src lignes+branches **92,73 %**, sans prétendre mesurer
+le code optionnel hors de src. Les scorers natifs et leur stockage sont vérifiés
+avec MLflow réellement installé. Les preuves détaillées restent sous work/mlflow/.
+Les protections des sorties incluent un refus des chemins hors de cet arbre et
+d'une redirection par symlink vers des données publiques. Une exclusion Git ne
+bloque pas git add -f : la sélection des fichiers publiés est donc aussi contrôlée.
+
+Selon GitHub au 11 novembre 2026, Free personnel inclut **120 core-hours/mois et
+15 GB-month**, partagés entre Codespaces : environ 60 heures à deux cœurs au
+maximum si aucune autre consommation. Le quota restant et le budget réel du
+compte ne sont pas inspectés. Le dépôt public ne rend pas le calcul illimité.
+Choisir deux cœurs, aucun prebuild, aucun service payant ; arrêter si le quota
+ne suffit pas et vérifier le blocage de dépenses si un paiement est configuré.
+
+Arrêter le serveur puis le Codespace après consultation ; le stockage continue
+à consommer l'allocation. Le même Codespace conserve ses fichiers sous /workspaces
+à l'arrêt/redémarrage : relancer seulement le dashboard pour les revoir. Il peut
+être supprimé après rétention, 30 jours d'inactivité par défaut ou moins selon
+réglages. Les fichiers ignorés sont alors perdus. Conserver le Codespace dans son
+quota jusqu'au rapport, sans prétendre offrir une sauvegarde durable ou une
+relocalisation automatique des URI absolues MLflow. Les anciens runs Codex ne
+sont pas accessibles par les nouveaux IDs et ne sont pas effacés.
+
+Le pilote futur CommercePilot-Agent-Evaluation-Groq reste préparé mais désactivé,
+sans exécuteur ni résultat inventé. Toute API réelle demandera une autorisation
+distincte. Aucun changement du design, des données ou des règles de sécurité.

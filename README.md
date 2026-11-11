@@ -16,9 +16,9 @@ Aucun rôle ne peut modifier les données, annuler une commande ou exécuter un 
 
 ## État actuel
 
-Les tâches 1 à 9 sont intégrées dans `main` : cadrage, environnement, données AtlasShop et outils, orchestration sécurisée Groq, interface Streamlit, observabilité, évaluation systématique, qualité et CI GitHub Actions. La première exécution réelle de CI a réussi avec 143 tests et neuf gates ([run GitHub Actions](https://github.com/Meryem-data-science/CommercePilot-AI-/actions/runs/42714484210)). Les trois outils ont chacun un scénario Groq réel validé lors de la tâche 4.
+Les tâches 1 à 11 sont intégrées dans `main` : cadrage, environnement, données AtlasShop et outils, orchestration sécurisée Groq, interface Streamlit, observabilité, évaluation systématique, qualité, CI GitHub Actions, finalisation du déploiement et gouvernance de sécurité. La première exécution réelle de CI a réussi avec 143 tests et neuf gates ([run GitHub Actions](https://github.com/Meryem-data-science/CommercePilot-AI-/actions/runs/42714484210)). Les trois outils ont chacun un scénario Groq réel validé lors de la tâche 4.
 
-L'interface est déjà déployée sur [CommercePilot AI](https://commercepilot-ai.streamlit.app/) depuis `feat/streamlit-interface`, selon la configuration communiquée par la propriétaire. Les cinq parcours Mock y ont été précédemment validés. La tâche 10 prépare la consolidation sur `main` ; **le commit effectivement servi et les cinq parcours après synchronisation avec `main` restent à vérifier**. L'accès au site depuis Codex est actuellement bloqué par le réseau, ce qui ne prouve pas une panne du site. Aucun déploiement supplémentaire ni intégration MLflow n'est ajouté.
+L'interface est déjà déployée sur [CommercePilot AI](https://commercepilot-ai.streamlit.app/) depuis `feat/streamlit-interface`, selon la configuration communiquée par la propriétaire. La propriétaire a confirmé les cinq parcours publics Mock après la tâche 10 ; **SHA runtime et Python restent à confirmer dans les logs Streamlit**. Les limites réseau du contrôle Codex sont conservées dans les preuves historiques ; aucun nouveau contrôle public n’est revendiqué pour MLflow. Aucun déploiement supplémentaire n’est ajouté ; l’intégration MLflow optionnelle est décrite plus bas.
 
 ## Documentation
 
@@ -28,7 +28,7 @@ L'interface est déjà déployée sur [CommercePilot AI](https://commercepilot-a
 
 ## Architecture fonctionnelle
 
-L'interface Streamlit transmet une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci peut solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précèdent l'accès aux sources synthétiques ; les outils sensibles réappliquent les contrôles. La réponse reste fondée sur les résultats. MLflow est envisagé pour le suivi des expériences et évaluations futures. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
+L'interface Streamlit transmet une question et un contexte de rôle simulé à un orchestrateur Python. Celui-ci peut solliciter un modèle via Groq et sélectionner un outil autorisé. Les validations et permissions précèdent l'accès aux sources synthétiques ; les outils sensibles réappliquent les contrôles. La réponse reste fondée sur les résultats. MLflow 3 suit désormais l'évaluation Mock dans un environnement optionnel distinct, sans modifier l'application. Le [diagramme détaillé](docs/architecture.md) décrit la cible initiale ; [l'orchestration actuelle](docs/agent.md) précise les composants de la tâche 4.
 
 ## Structure du dépôt
 
@@ -89,7 +89,7 @@ Pour préparer une configuration locale future, sans écraser un fichier existan
 cp -n .env.example .env
 ```
 
-Cette copie reste facultative et ne configure pas automatiquement l'application : Groq lit `GROQ_API_KEY` et `GROQ_MODEL` dans l'environnement du serveur. `MLFLOW_TRACKING_URI` reste réservé à une étape future. Ne jamais placer une clé dans `.env.example`, le code, un rapport ou une capture. `.env` et ses variantes, les clés privées, les secrets Streamlit et les logs sont ignorés par Git ; `.env.example` reste versionnable. Utiliser ultérieurement les réglages sécurisés de l'environnement ou les secrets GitHub Actions pour l'injection des identifiants. Les règles d'exclusion ne remplacent pas une revue avant chaque commit.
+Cette copie reste facultative et ne configure pas automatiquement l'application : Groq lit `GROQ_API_KEY` et `GROQ_MODEL` dans l'environnement du serveur. L'évaluation MLflow optionnelle impose son stockage SQLite local et n'utilise pas une destination distante héritée de `MLFLOW_TRACKING_URI`. Ne jamais placer une clé dans `.env.example`, le code, un rapport ou une capture. `.env` et ses variantes, les clés privées, les secrets Streamlit et les logs sont ignorés par Git ; `.env.example` reste versionnable. Utiliser ultérieurement les réglages sécurisés de l'environnement pour l'injection des identifiants ; les tests CI n'en reçoivent aucun. Les règles d'exclusion ne remplacent pas une revue avant chaque commit.
 
 ## Données synthétiques — tâche 3.A
 
@@ -234,3 +234,39 @@ Le [document de gouvernance](docs/governance.md) décrit les frontières, flux, 
 ```
 
 L'audit local génère `security/audit_results.json`, sans recopier les valeurs détectées. Il contrôle les fichiers courants et les blobs atteignables de l'historique par motifs, pas les valeurs stockées dans les paramètres privés GitHub/Streamlit. Les preuves de tests de tâche 11 sont dans `security/quality_verification.json`. Aucune activation d'API ou modification de droits n'est effectuée.
+
+
+## Évaluation de l'agent avec MLflow
+
+Le dépôt reste **public**. Pour ouvrir le vrai dashboard dans un navigateur,
+créer un **Codespace personnel sur feat/mlflow-agent-evaluation**, puis suivre
+[la procédure illustrable pas à pas](docs/mlflow_evaluation.md). Aucun téléchargement
+d'archive Codex ni installation sur le PC n'est nécessaire.
+
+Dans le terminal du Codespace, depuis la racine du dépôt :
+
+```bash
+bash evaluation/setup_mlflow.sh
+work/mlflow-env/bin/python -m evaluation.mlflow_evaluation
+work/mlflow-env/bin/python -m evaluation.mlflow_verify
+work/mlflow-env/bin/python -m evaluation.mlflow_dashboard
+```
+
+Ouvrir **Ports → 5000 → Private → Open in Browser**, puis
+**GenAI → CommercePilot-Agent-Evaluation → Evaluation runs**. Le serveur affiche
+le lien du nouveau run. Chaque exécution recalcule les 45 cas Mock et reçoit un
+nouvel ID ; verify relit les résultats sans réexécuter l'agent. La référence reste
+**42/45**, **28/28 contrôles directs**, zéro violation détectée, avec EV-010/016/022
+visibles. Les plans imposés ne prouvent pas le routage spontané de Groq.
+
+Python **3.11.14**, MLflow **3.18.0**, dépendances d'évaluation contraintes et isolées
+de Streamlit. **Tous les nouveaux résultats, traces, bases, preuves et archives
+restent ignorés sous work/mlflow/** ; aucune sortie MLflow n'est publiée dans Git.
+Les résultats historiques versionnés restent inchangés. Le pilote Groq proposé
+reste désactivé et nécessite une autorisation future, sans clé ni appel réel ici.
+
+Codespaces gratuit est soumis à quota : vérifier l'allocation, utiliser deux cœurs,
+garder le port privé et arrêter le Codespace après usage. Son stockage consomme
+encore l'allocation à l'arrêt et peut être supprimé après la durée de rétention.
+Rouvrir le même Codespace puis lancer seulement le dashboard pour retrouver ses
+runs, sans refaire l'évaluation. Les limites et protections figurent dans le guide.

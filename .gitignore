@@ -39,3 +39,15 @@ mlartifacts/
 
 # Preuves intermédiaires des quality gates
 work/
+
+# MLflow: private runtime output, including legacy locations from local trials.
+/evaluation/mlflow_results.json
+/evaluation/mlflow_verification.json
+/evaluation/mlflow_quality_verification.json
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/commercepilot-mlflow-*.tar.gz
+/ouvrir-mlflow-commercepilot.zip
