@@ -1,0 +1,14 @@
+{
+  "state": "prepared_only_not_executed",
+  "experiment_name": "CommercePilot-Agent-Evaluation-Groq",
+  "protocol_version": "groq-pilot-v1-proposed",
+  "case_ids": ["EV-002", "EV-005", "EV-010", "EV-011", "EV-016", "EV-017", "EV-022", "EV-023", "EV-029", "EV-034"],
+  "maximum_interactions": 10,
+  "automatic_retries": 0,
+  "requires_explicit_future_authorization": true,
+  "requires_secure_provider_configuration": true,
+  "execution_enabled": false,
+  "method": "Future separate runner must reuse annotations, CSV oracles and checks, replace imposed plans with genuine GroqClient, preserve application-owned identity and permissions, count provider requests and tool calls, record model and non-sensitive finish metadata. Stop on unexpected provider failure or any permission violation; do not repeat failed interactions.",
+  "privacy": "Use public synthetic fixtures only; project scores before logging. No raw prompts, answers, credentials, identities, tool arguments or private reasoning in MLflow.",
+  "interpretation": "A single authorized interaction per case would be a pilot, not a statistical guarantee. No Groq run, cost, score or routing accuracy has been measured by this preparation. Existing Mock faults EV-041 to EV-045 are excluded."
+}

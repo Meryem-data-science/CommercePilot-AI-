@@ -1,0 +1,4 @@
+# Optional evaluation environment only; never installed by Streamlit/production CI.
+-c requirements-evaluation-constraints.txt
+-r requirements.txt
+mlflow==3.18.0
